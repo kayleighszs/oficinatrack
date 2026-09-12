@@ -1,7 +1,14 @@
 package br.com.oficinatrack.cliente.domain;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+
+@Embeddable
 public class CpfCnpj {
-    private final String value;
+    @Column(name = "cpf_cnpj", length = 20)
+    private String value;
+
+    protected CpfCnpj() { this.value = null; }
 
     public CpfCnpj(String value) {
         // validation placeholder
