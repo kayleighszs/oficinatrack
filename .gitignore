@@ -34,3 +34,6 @@ build/
 # Local environment files containing secrets
 .env
 .env.local
+
+### macOS ###
+.DS_Store
