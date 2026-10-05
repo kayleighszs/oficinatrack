@@ -1,4 +1,4 @@
-package br.com.oficinatrack.ordemservico.api.dto.in;
+package br.com.oficinatrack.catalogoservicos.api.dto.in;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Positive;
 
 import java.math.BigDecimal;
 
-public record CadastrarOrdemServicoIn(
+public record ServicoRequestIn(
         @NotBlank(message = "O nome é obrigatório.")
         String nome,
 

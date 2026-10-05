@@ -1,9 +1,8 @@
-package br.com.oficinatrack.ordemServico.api;
+package br.com.oficinatrack.servico;
 
-import br.com.oficinatrack.ordemservico.api.OrdemServicoController;
-import br.com.oficinatrack.ordemservico.api.dto.in.CadastrarOrdemServicoIn;
-import br.com.oficinatrack.ordemservico.api.dto.out.CadastrarOrdemServicoOut;
-import br.com.oficinatrack.ordemservico.application.OrdemServicoService;
+import br.com.oficinatrack.catalogoservicos.api.ServicoController;
+import br.com.oficinatrack.catalogoservicos.api.dto.out.ServicoRequestOut;
+import br.com.oficinatrack.catalogoservicos.application.ServicoService;
 import br.com.oficinatrack.shared.exception.GlobalExceptionHandler;
 import br.com.oficinatrack.shared.exception.RecursoNaoEncontradoException;
 import br.com.oficinatrack.shared.exception.RegraDeNegocioException;
@@ -40,10 +39,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
-public class OrdemServicoControllerTest {
+public class ServicoControllerTest {
 
     @Mock
-    private OrdemServicoService servicoService;
+    private ServicoService servicoService;
 
     private MockMvc mockMvc;
 
@@ -52,15 +51,15 @@ public class OrdemServicoControllerTest {
         LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
         validator.afterPropertiesSet();
 
-        mockMvc = MockMvcBuilders.standaloneSetup(new OrdemServicoController(servicoService))
+        mockMvc = MockMvcBuilders.standaloneSetup(new ServicoController(servicoService))
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
                 .setValidator(validator)
                 .build();
     }
 
-    private CadastrarOrdemServicoOut responseOut() {
-        return new CadastrarOrdemServicoOut(
+    private ServicoRequestOut responseOut() {
+        return new ServicoRequestOut(
                 1L,
                 "Troca de Óleo",
                 new BigDecimal("150.00"),
@@ -161,7 +160,7 @@ public class OrdemServicoControllerTest {
     @Test
     void listarSemFiltrosDeveRetornarPaginaVazia() throws Exception {
         var pageable = PageRequest.of(0, 10);
-        var pageVazia = new PageImpl<CadastrarOrdemServicoOut>(List.of(), pageable, 0);
+        var pageVazia = new PageImpl<ServicoRequestOut>(List.of(), pageable, 0);
 
         Map<String, Object> mapResponse = new HashMap<>();
         mapResponse.put("ordens", pageVazia);

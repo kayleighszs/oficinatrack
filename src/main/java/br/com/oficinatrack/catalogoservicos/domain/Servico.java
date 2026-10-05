@@ -1,4 +1,4 @@
-package br.com.oficinatrack.ordemservico.domain;
+package br.com.oficinatrack.catalogoservicos.domain;
 
 import jakarta.persistence.*;
 
@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "servico")
-public class OrdemServico {
+public class Servico {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -30,9 +30,9 @@ public class OrdemServico {
     @Column(name = "atualizado_em", nullable = false)
     private LocalDateTime atualizadoEm;
 
-    public OrdemServico() {}
+    public Servico() {}
 
-    public OrdemServico(String nome, BigDecimal valor, Integer tempoMedioEstimadoMinutos) {
+    public Servico(String nome, BigDecimal valor, Integer tempoMedioEstimadoMinutos) {
         validarNome(nome);
         validarValor(valor);
 
