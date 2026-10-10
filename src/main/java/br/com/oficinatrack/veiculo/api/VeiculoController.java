@@ -4,8 +4,8 @@ import br.com.oficinatrack.veiculo.api.dto.VeiculoRequest;
 import br.com.oficinatrack.veiculo.api.dto.VeiculoResponse;
 import br.com.oficinatrack.veiculo.api.dto.VeiculoUpdateRequest;
 import br.com.oficinatrack.veiculo.application.VeiculoService;
-import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -14,7 +14,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/veiculos")
-public class VeiculoController {
+@Validated
+public class VeiculoController implements SwaggerVeiculo {
 
     private final VeiculoService veiculoService;
 
@@ -23,7 +24,7 @@ public class VeiculoController {
     }
 
     @PostMapping
-    public ResponseEntity<VeiculoResponse> cadastrar(@Valid @RequestBody VeiculoRequest request) {
+    public ResponseEntity<VeiculoResponse> cadastrar(@RequestBody VeiculoRequest request) {
         VeiculoResponse response = veiculoService.cadastrar(request);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
@@ -39,12 +40,12 @@ public class VeiculoController {
     }
 
     @GetMapping("/{id}")
-    public VeiculoResponse detalhar(@PathVariable Long id) {
+    public VeiculoResponse detalhar(@PathVariable("id") Long id) {
         return veiculoService.detalhar(id);
     }
 
     @PatchMapping("/{id}")
-    public VeiculoResponse atualizar(@PathVariable Long id, @Valid @RequestBody VeiculoUpdateRequest request) {
+    public VeiculoResponse atualizar(@PathVariable("id") Long id, @RequestBody VeiculoUpdateRequest request) {
         return veiculoService.atualizar(id, request);
     }
 }

@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "pecas")
 public class Peca {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,6 +39,18 @@ public class Peca {
         this.ativo = ativo;
         this.criadoEm = criadoEm;
         this.atualizadoEm = atualizadoEm;
+    }
+
+    @PrePersist
+    void aoCriar() {
+        LocalDateTime agora = LocalDateTime.now();
+        this.criadoEm = agora;
+        this.atualizadoEm = agora;
+    }
+
+    @PreUpdate
+    void aoAtualizar() {
+        this.atualizadoEm = LocalDateTime.now();
     }
 
     public static Peca cadastrar(String nome, BigDecimal valorUnitario, Integer quantidadeEstoque, Integer estoqueMinimo){
@@ -119,10 +132,6 @@ public class Peca {
     public Integer getEstoqueMinimo() {
         return estoqueMinimo;
     }
-
-//    public void setQuantidadeEstoque(Integer quantidadeEstoque) {
-//        this.quantidadeEstoque = quantidadeEstoque;
-//    }
 
     public BigDecimal getValorUnitario() {
         return valorUnitario;

@@ -41,13 +41,7 @@ public class ServicoService {
 
         Servico servicoSalvo = servicoRepository.save(servico);
 
-        return ResponseEntity.ok(new ServicoRequestOut(
-                        servicoSalvo.getId(),
-                        servicoSalvo.getNome(),
-                        servicoSalvo.getValor(),
-                        servicoSalvo.getTempoMedioEstimadoMinutos()
-                )
-        );
+        return ResponseEntity.ok(paraResponse(servicoSalvo));
 
     }
 
@@ -61,12 +55,7 @@ public class ServicoService {
             servicos = servicoRepository.findAll(pageable);
         }
 
-        Page<ServicoRequestOut> ret = servicos.map(s -> new ServicoRequestOut(
-                s.getId(),
-                s.getNome(),
-                s.getValor(),
-                s.getTempoMedioEstimadoMinutos()
-        ));
+        Page<ServicoRequestOut> ret = servicos.map(this::paraResponse);
 
         Map<String, Object> response = new HashMap<>();
         response.put("ordens", ret);
@@ -78,16 +67,20 @@ public class ServicoService {
     }
 
     @Transactional(readOnly = true)
-    public ResponseEntity buscarPorId(Long id) {
+    public ServicoRequestOut buscarPorId(Long id) {
         Servico servico = servicoRepository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Serviço não encontrado com o ID: " + id));
 
-        return ResponseEntity.ok(new ServicoRequestOut(
-                        servico.getId(),
-                        servico.getNome(),
-                        servico.getValor(),
-                        servico.getTempoMedioEstimadoMinutos()
-                )
+        return paraResponse(servico);
+    }
+
+    private ServicoRequestOut paraResponse(Servico servico) {
+        return new ServicoRequestOut(
+                servico.getId(),
+                servico.getNome(),
+                servico.getValor(),
+                servico.getTempoMedioEstimadoMinutos(),
+                servico.getAtivo()
         );
     }
 
