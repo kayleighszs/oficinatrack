@@ -12,3 +12,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+springdoc:
+  api-docs:
+    version: openapi_3_0

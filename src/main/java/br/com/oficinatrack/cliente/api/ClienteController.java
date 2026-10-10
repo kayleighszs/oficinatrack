@@ -4,7 +4,6 @@ import br.com.oficinatrack.cliente.application.ClienteService;
 import br.com.oficinatrack.cliente.api.dto.AtualizarClienteRequest;
 import br.com.oficinatrack.cliente.api.dto.CadastrarClienteRequest;
 import br.com.oficinatrack.cliente.api.dto.ClienteResponse;
-import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -24,7 +23,7 @@ public class ClienteController implements SwaggerCliente {
     }
 
     @PostMapping
-    public ResponseEntity<Void> cadastrar(@Valid @RequestBody CadastrarClienteRequest request) {
+    public ResponseEntity<Void> cadastrar(@RequestBody CadastrarClienteRequest request) {
         clienteService.cadastrar(request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

@@ -1,7 +1,6 @@
 package br.com.oficinatrack.catalogoservicos.api;
 
 import br.com.oficinatrack.catalogoservicos.api.dto.in.ServicoRequestIn;
-import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +11,7 @@ import br.com.oficinatrack.catalogoservicos.application.ServicoService;
 @RestController
 @RequestMapping("/servicos")
 @Validated
-public class ServicoController {
+public class ServicoController implements SwaggerServico {
     private final ServicoService servicoService;
 
     public ServicoController(ServicoService servicoService) {
@@ -20,7 +19,7 @@ public class ServicoController {
     }
 
     @PostMapping
-    public ResponseEntity<?> cadastrar(@Valid @RequestBody ServicoRequestIn request) throws Exception {
+    public ResponseEntity<?> cadastrar(@RequestBody ServicoRequestIn request) throws Exception {
         return servicoService.cadastrar(request);
     }
 
@@ -34,12 +33,12 @@ public class ServicoController {
 
     @GetMapping("{id}")
     public ResponseEntity<?> buscarPorId(@PathVariable("id") Long id) {
-        return servicoService.buscarPorId(id);
+        return ResponseEntity.ok(servicoService.buscarPorId(id));
     }
 
     @PutMapping("{id}")
     public ResponseEntity<?> atualizar(@PathVariable("id") Long id,
-                                                     @RequestBody ServicoRequestIn request) {
+                                       @RequestBody ServicoRequestIn request) {
         return servicoService.atualizar(id, request);
     }
 

@@ -5,5 +5,6 @@ import java.math.BigDecimal;
 public record ServicoRequestOut(Long id,
                                 String nome,
                                 BigDecimal valor,
-                                Integer tempoMedioEstimado) {
+                                Integer tempoMedioEstimado,
+                                Boolean ativo) {
 }

@@ -63,7 +63,8 @@ public class ServicoControllerTest {
                 1L,
                 "Troca de Óleo",
                 new BigDecimal("150.00"),
-                45
+                45,
+                true
         );
     }
 
@@ -180,13 +181,14 @@ public class ServicoControllerTest {
 
     @Test
     void buscarPorIdDeveRetornar200() throws Exception {
-        when(servicoService.buscarPorId(1L)).thenReturn(ResponseEntity.ok(responseOut()));
+        when(servicoService.buscarPorId(1L)).thenReturn(responseOut());
 
         mockMvc.perform(get("/servicos/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.nome").value("Troca de Óleo"))
-                .andExpect(jsonPath("$.valor").value(150.00));
+                .andExpect(jsonPath("$.valor").value(150.00))
+                .andExpect(jsonPath("$.ativo").value(true));
     }
 
     @Test
