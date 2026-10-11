@@ -17,7 +17,7 @@ public class CadastrarClienteRequest {
     private String cpfCnpj;
 
     @Size(max = 20, message = "Telefone deve ter no máximo 20 caracteres")
-    //@Pattern(regexp = "^[0-9\\s\\-()+]*$", message = "telefone inválido")
+    @Pattern(regexp = "^[0-9\\s\\-()+]*$", message = "telefone inválido")
     private String telefone;
 
     @Size(max = 150, message = "E-mail deve ter no máximo 150 caracteres")
