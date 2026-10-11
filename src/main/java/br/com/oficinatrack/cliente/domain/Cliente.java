@@ -1,5 +1,6 @@
 package br.com.oficinatrack.cliente.domain;
 
+import br.com.oficinatrack.shared.validation.CpfCnpj;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -14,6 +15,7 @@ public class Cliente {
     @Column(name = "nome", length = 150, nullable = false)
     private String nome;
 
+    @CpfCnpj(message = "CPF ou CNPJ inválido ou incorreto")
     @Column(name = "cpf_cnpj", length = 14, nullable = false, unique = true)
     private String cpfCnpj;
 

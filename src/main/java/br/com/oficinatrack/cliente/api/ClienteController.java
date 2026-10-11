@@ -7,6 +7,7 @@ import br.com.oficinatrack.cliente.api.dto.ClienteResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,30 +24,35 @@ public class ClienteController implements SwaggerCliente {
         this.clienteService = clienteService;
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE')")
     @PostMapping
     public ResponseEntity<Void> cadastrar(@Valid @RequestBody CadastrarClienteRequest request) {
         clienteService.cadastrar(request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE')")
     @GetMapping
     public ResponseEntity<List<ClienteResponse>> listar(@RequestParam(value = "cpfCnpj", required = false) String cpfCnpj,
                                                         @RequestParam(value = "nome", required = false) String nome) {
         return ResponseEntity.ok(clienteService.listarClientes(cpfCnpj, nome));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE')")
     @GetMapping("{id}")
     public ResponseEntity<ClienteResponse> buscarPorId(@PathVariable("id") Long id) {
         ClienteResponse response = clienteService.buscarPorId(id);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE')")
     @PutMapping("{id}")
     public ResponseEntity<ClienteResponse> atualizar(@PathVariable("id") Long id,
                                                     @RequestBody AtualizarClienteRequest request) {
         return ResponseEntity.ok(clienteService.atualizar(id, request));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE')")
     @PatchMapping("{id}/inativar")
     public ResponseEntity<ClienteResponse> inativar(@PathVariable("id") Long id) {
         return ResponseEntity.ok(clienteService.inativar(id));

@@ -6,6 +6,7 @@ import br.com.oficinatrack.veiculo.api.dto.VeiculoUpdateRequest;
 import br.com.oficinatrack.veiculo.application.VeiculoService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -22,6 +23,7 @@ public class VeiculoController {
         this.veiculoService = veiculoService;
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE')")
     @PostMapping
     public ResponseEntity<VeiculoResponse> cadastrar(@Valid @RequestBody VeiculoRequest request) {
         VeiculoResponse response = veiculoService.cadastrar(request);
@@ -32,17 +34,20 @@ public class VeiculoController {
         return ResponseEntity.created(location).body(response);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE')")
     @GetMapping
     public List<VeiculoResponse> listar(@RequestParam(required = false) Long clienteId,
                                         @RequestParam(required = false) Boolean ativo) {
         return veiculoService.listar(clienteId, ativo);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE')")
     @GetMapping("/{id}")
     public VeiculoResponse detalhar(@PathVariable Long id) {
         return veiculoService.detalhar(id);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE')")
     @PatchMapping("/{id}")
     public VeiculoResponse atualizar(@PathVariable Long id, @Valid @RequestBody VeiculoUpdateRequest request) {
         return veiculoService.atualizar(id, request);

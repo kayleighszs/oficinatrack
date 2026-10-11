@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,12 +24,14 @@ public class PecaController {
         this.pecaService = pecaService;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<PecaResponse> cadastrar(@Valid @RequestBody PecaRequest pecaRequest){
         PecaResponse response = pecaService.cadastrar(pecaRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE')")
     @GetMapping
     public ResponseEntity<Page<PecaResponse>> listar(
             @RequestParam(required = false) String nome,
@@ -39,18 +42,21 @@ public class PecaController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE')")
     @GetMapping("/{id}")
     public ResponseEntity<PecaResponse> buscarPorId(@PathVariable Long id){
         PecaResponse response = pecaService.buscarPorId(id);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<PecaResponse> atualizar(@PathVariable Long id, @Valid @RequestBody PecaUpdateRequest pecaRequest){
         PecaResponse response = pecaService.atualizar(id, pecaRequest);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/estoque")
     public ResponseEntity<PecaResponse> movimentarEstoque(@PathVariable Long id, @Valid @RequestBody MovimentacaoEstoqueRequest movimentacaoEstoqueRequest){
         PecaResponse response = pecaService.movimentarEstoque(id, movimentacaoEstoqueRequest);

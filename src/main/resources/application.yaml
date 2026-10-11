@@ -12,3 +12,8 @@ spring:
     properties:
       hibernate:
         format_sql: true
+api:
+   security:
+     token:
+       secret: ${JWT_SECRET:minhaChaveSecretaSuperSeguraParaOProjetoOficinaTrack123!}
+       expiration: ${JWT_EXPIRATION:7200000} # 2 horas em milissegundos
