@@ -35,6 +35,11 @@ public class GlobalExceptionHandler {
         return montar(HttpStatus.NOT_FOUND, ex.getMessage(), null);
     }
 
+    @ExceptionHandler(ConflitoException.class)
+    public ResponseEntity<ErroResponse> handleConflito(ConflitoException ex) {
+        return montar(HttpStatus.CONFLICT, ex.getMessage(), null);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErroResponse> handleBodyInvalido(MethodArgumentNotValidException ex) {
         List<ErroResponse.CampoErro> campos = ex.getBindingResult().getFieldErrors().stream()
