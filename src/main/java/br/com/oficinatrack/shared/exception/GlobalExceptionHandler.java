@@ -40,6 +40,11 @@ public class GlobalExceptionHandler {
         return montar(HttpStatus.CONFLICT, ex.getMessage(), null);
     }
 
+    @ExceptionHandler(CredencialPublicaException.class)
+    public ResponseEntity<ErroResponse> handleCredencialPublica(CredencialPublicaException ex) {
+        return montar(HttpStatus.UNAUTHORIZED, ex.getMessage(), null);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErroResponse> handleBodyInvalido(MethodArgumentNotValidException ex) {
         List<ErroResponse.CampoErro> campos = ex.getBindingResult().getFieldErrors().stream()

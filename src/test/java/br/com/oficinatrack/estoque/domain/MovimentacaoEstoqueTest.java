@@ -74,7 +74,7 @@ class MovimentacaoEstoqueTest {
         @DisplayName("deve criar movimentação com origem BAIXA_OS e usuarioId nulo")
         void deveCriarComOrigemBaixaOsEUsuarioNulo() {
             MovimentacaoEstoque movimentacao = MovimentacaoEstoque.registrarAutomatica(
-                    peca, 4, 100L
+                    peca, 4, 100L, 200L
             );
 
             assertThat(movimentacao.getOrigem()).isEqualTo(Origem.BAIXA_OS);
@@ -85,7 +85,7 @@ class MovimentacaoEstoqueTest {
         @DisplayName("deve sempre definir o tipo como SAIDA, independente de outros valores")
         void deveSempreDefinirTipoComoSaida() {
             MovimentacaoEstoque movimentacao = MovimentacaoEstoque.registrarAutomatica(
-                    peca, 4, 100L
+                    peca, 4, 100L, 200L
             );
 
             assertThat(movimentacao.getTipo()).isEqualTo(TipoMovimentacao.SAIDA);
@@ -95,10 +95,11 @@ class MovimentacaoEstoqueTest {
         @DisplayName("deve preencher ordemServicoId, quantidade e a referência da peça corretamente")
         void devePreencherOrdemServicoQuantidadeEPeca() {
             MovimentacaoEstoque movimentacao = MovimentacaoEstoque.registrarAutomatica(
-                    peca, 4, 100L
+                    peca, 4, 100L, 200L
             );
 
             assertThat(movimentacao.getOrdemServicoId()).isEqualTo(100L);
+            assertThat(movimentacao.getOrcamentoId()).isEqualTo(200L);
             assertThat(movimentacao.getQuantidade()).isEqualTo(4);
             assertThat(movimentacao.getPeca()).isEqualTo(peca);
         }
@@ -107,7 +108,7 @@ class MovimentacaoEstoqueTest {
         @DisplayName("deve preencher criadoEm automaticamente")
         void devePreencherCriadoEmAutomaticamente() {
             MovimentacaoEstoque movimentacao = MovimentacaoEstoque.registrarAutomatica(
-                    peca, 4, 100L
+                    peca, 4, 100L, 200L
             );
 
             assertThat(movimentacao.getCriadoEm()).isNotNull();

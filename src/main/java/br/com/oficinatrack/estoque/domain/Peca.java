@@ -11,6 +11,8 @@ public class Peca {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Version
+    private Long versaoRegistro;
     private String nome;
     @Column(name = "valor_unitario")
     private BigDecimal valorUnitario;
