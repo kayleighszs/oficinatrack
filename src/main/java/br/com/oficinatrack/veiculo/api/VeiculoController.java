@@ -23,7 +23,7 @@ public class VeiculoController {
         this.veiculoService = veiculoService;
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE')")
+    @PreAuthorize("hasAnyRole('GESTOR', 'ATENDENTE')")
     @PostMapping
     public ResponseEntity<VeiculoResponse> cadastrar(@Valid @RequestBody VeiculoRequest request) {
         VeiculoResponse response = veiculoService.cadastrar(request);
@@ -34,20 +34,20 @@ public class VeiculoController {
         return ResponseEntity.created(location).body(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE')")
+    @PreAuthorize("hasAnyRole('GESTOR', 'ATENDENTE', 'MECANICO')")
     @GetMapping
     public List<VeiculoResponse> listar(@RequestParam(required = false) Long clienteId,
                                         @RequestParam(required = false) Boolean ativo) {
         return veiculoService.listar(clienteId, ativo);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE')")
+    @PreAuthorize("hasAnyRole('GESTOR', 'ATENDENTE', 'MECANICO')")
     @GetMapping("/{id}")
     public VeiculoResponse detalhar(@PathVariable Long id) {
         return veiculoService.detalhar(id);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE')")
+    @PreAuthorize("hasAnyRole('GESTOR', 'ATENDENTE')")
     @PatchMapping("/{id}")
     public VeiculoResponse atualizar(@PathVariable Long id, @Valid @RequestBody VeiculoUpdateRequest request) {
         return veiculoService.atualizar(id, request);

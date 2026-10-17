@@ -16,6 +16,7 @@ class JwtServiceTest {
     void setUp() {
         jwtService = new JwtService();
         ReflectionTestUtils.setField(jwtService, "secretKey", "minhaChaveSecretaMuitoLongaParaTestesUnitarios123456");
+        ReflectionTestUtils.setField(jwtService, "expirationTime", 1_800_000L);
     }
 
     @Test
@@ -34,7 +35,7 @@ class JwtServiceTest {
     void deveExtrairUsernameDoTokenCorretamente() {
         Usuario usuario = new Usuario();
         usuario.setUsername("admin_teste");
-        usuario.setRole(Role.ADMIN);
+        usuario.setRole(Role.GESTOR);
         String token = jwtService.gerarToken(usuario);
 
         String usernameExtraido = jwtService.extrairUsername(token);

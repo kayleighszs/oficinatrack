@@ -24,14 +24,14 @@ public class PecaController {
         this.pecaService = pecaService;
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('GESTOR')")
     @PostMapping
     public ResponseEntity<PecaResponse> cadastrar(@Valid @RequestBody PecaRequest pecaRequest){
         PecaResponse response = pecaService.cadastrar(pecaRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE')")
+    @PreAuthorize("hasAnyRole('GESTOR', 'ATENDENTE', 'MECANICO')")
     @GetMapping
     public ResponseEntity<Page<PecaResponse>> listar(
             @RequestParam(required = false) String nome,
@@ -42,21 +42,21 @@ public class PecaController {
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE')")
+    @PreAuthorize("hasAnyRole('GESTOR', 'ATENDENTE', 'MECANICO')")
     @GetMapping("/{id}")
     public ResponseEntity<PecaResponse> buscarPorId(@PathVariable Long id){
         PecaResponse response = pecaService.buscarPorId(id);
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('GESTOR')")
     @PutMapping("/{id}")
     public ResponseEntity<PecaResponse> atualizar(@PathVariable Long id, @Valid @RequestBody PecaUpdateRequest pecaRequest){
         PecaResponse response = pecaService.atualizar(id, pecaRequest);
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('GESTOR')")
     @PatchMapping("/{id}/estoque")
     public ResponseEntity<PecaResponse> movimentarEstoque(@PathVariable Long id, @Valid @RequestBody MovimentacaoEstoqueRequest movimentacaoEstoqueRequest){
         PecaResponse response = pecaService.movimentarEstoque(id, movimentacaoEstoqueRequest);

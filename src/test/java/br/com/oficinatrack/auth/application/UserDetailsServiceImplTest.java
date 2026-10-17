@@ -30,7 +30,7 @@ class UserDetailsServiceImplTest {
         Usuario usuarioMock = new Usuario();
         usuarioMock.setUsername("admin");
         usuarioMock.setSenha("123456");
-        usuarioMock.setRole(Role.ADMIN);
+        usuarioMock.setRole(Role.GESTOR);
 
         when(usuarioRepository.findByUsername("admin")).thenReturn(Optional.of(usuarioMock));
 

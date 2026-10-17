@@ -24,35 +24,35 @@ public class ClienteController implements SwaggerCliente {
         this.clienteService = clienteService;
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE')")
+    @PreAuthorize("hasAnyRole('GESTOR', 'ATENDENTE')")
     @PostMapping
     public ResponseEntity<Void> cadastrar(@Valid @RequestBody CadastrarClienteRequest request) {
         clienteService.cadastrar(request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE')")
+    @PreAuthorize("hasAnyRole('GESTOR', 'ATENDENTE', 'MECANICO')")
     @GetMapping
     public ResponseEntity<List<ClienteResponse>> listar(@RequestParam(value = "cpfCnpj", required = false) String cpfCnpj,
                                                         @RequestParam(value = "nome", required = false) String nome) {
         return ResponseEntity.ok(clienteService.listarClientes(cpfCnpj, nome));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE')")
+    @PreAuthorize("hasAnyRole('GESTOR', 'ATENDENTE', 'MECANICO')")
     @GetMapping("{id}")
     public ResponseEntity<ClienteResponse> buscarPorId(@PathVariable("id") Long id) {
         ClienteResponse response = clienteService.buscarPorId(id);
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE')")
+    @PreAuthorize("hasAnyRole('GESTOR', 'ATENDENTE')")
     @PutMapping("{id}")
     public ResponseEntity<ClienteResponse> atualizar(@PathVariable("id") Long id,
                                                     @RequestBody AtualizarClienteRequest request) {
         return ResponseEntity.ok(clienteService.atualizar(id, request));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE')")
+    @PreAuthorize("hasAnyRole('GESTOR', 'ATENDENTE')")
     @PatchMapping("{id}/inativar")
     public ResponseEntity<ClienteResponse> inativar(@PathVariable("id") Long id) {
         return ResponseEntity.ok(clienteService.inativar(id));
