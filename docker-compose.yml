@@ -11,6 +11,32 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d oficina"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/oficina
+      DB_USERNAME: postgres
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-1800000}
+      GESTOR_USERNAME: ${GESTOR_USERNAME:-}
+      GESTOR_PASSWORD: ${GESTOR_PASSWORD:-}
+      ATENDENTE_USERNAME: ${ATENDENTE_USERNAME:-}
+      ATENDENTE_PASSWORD: ${ATENDENTE_PASSWORD:-}
+      MECANICO_USERNAME: ${MECANICO_USERNAME:-}
+      MECANICO_PASSWORD: ${MECANICO_PASSWORD:-}
+    ports:
+      - "8080:8080"
 
 volumes:
   postgres_data:

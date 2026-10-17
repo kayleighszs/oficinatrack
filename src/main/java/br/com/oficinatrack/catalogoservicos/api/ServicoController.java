@@ -10,7 +10,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import br.com.oficinatrack.catalogoservicos.application.ServicoService;
 
-@PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE')")
+@PreAuthorize("hasAnyRole('GESTOR', 'ATENDENTE', 'MECANICO')")
 @RestController
 @RequestMapping("/servicos")
 @Validated

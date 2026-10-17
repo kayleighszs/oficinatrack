@@ -18,7 +18,8 @@ public class JwtService {
     @Value("${api.security.token.secret}")
     private String secretKey;
 
-    private static final long EXPIRATION_TIME = 86400000L; // 1 dia em milissegundos
+    @Value("${api.security.token.expiration}")
+    private long expirationTime;
 
     private Key getSignKey() {
         return Keys.hmacShaKeyFor(secretKey.getBytes());
@@ -28,7 +29,7 @@ public class JwtService {
         return Jwts.builder()
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -60,6 +61,6 @@ public class JwtService {
     }
 
     public long getExpirationTime() {
-        return EXPIRATION_TIME;
+        return expirationTime;
     }
 }

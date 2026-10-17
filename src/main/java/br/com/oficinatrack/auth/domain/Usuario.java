@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Entity
-@Table(name = "usuarios") // Nome da tabela separado para não misturar com clientes
+@Table(name = "usuarios")
 public class Usuario implements UserDetails {
 
     @Id
@@ -17,14 +17,14 @@ public class Usuario implements UserDetails {
     private Long id;
 
     @Column(unique = true, nullable = false)
-    private String username; // Campo de login (pode ser email ou username conforme o seu requisito)
+    private String username;
 
     @Column(nullable = false)
-    private String senha; // Guardada encriptada com BCrypt
+    private String senha;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role; // ADMIN ou ATENDENTE
+    private Role role;
 
     public Usuario() {
     }
@@ -35,17 +35,9 @@ public class Usuario implements UserDetails {
         this.role = role;
     }
 
-    // --- Métodos do Spring Security (UserDetails) ---
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (this.role == Role.ADMIN) {
-            return List.of(
-                    new SimpleGrantedAuthority("ROLE_ADMIN"),
-                    new SimpleGrantedAuthority("ROLE_ATENDENTE")
-            );
-        }
-        return List.of(new SimpleGrantedAuthority("ROLE_ATENDENTE"));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
     public String getSenha() {
