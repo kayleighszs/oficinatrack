@@ -80,7 +80,7 @@ public class PecaService {
 
     @Transactional
     public PecaResponse movimentarEstoque(Long id, MovimentacaoEstoqueRequest request){
-        Peca peca = pecaRepository.findById(id)
+        Peca peca = pecaRepository.buscarPorIdParaAtualizacao(id)
                 .orElseThrow(() -> new PecaNaoEncontradaException(
                                 "Peça não encontrada com o ID: " + id
                         )

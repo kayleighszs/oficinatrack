@@ -180,6 +180,12 @@
                         <exclude>**/OficinatrackApplication.class</exclude>
                         <exclude>**/shared/config/**</exclude>
                         <exclude>**/*MapperInterfaceImpl.class</exclude>
+                        <exclude>**/api/**</exclude>
+                        <exclude>**/infra/**</exclude>
+                        <exclude>**/infrastructure/**</exclude>
+                        <exclude>**/dto/**</exclude>
+                        <exclude>**/shared/exception/**</exclude>
+                        <exclude>**/estoque/exceptions/**</exclude>
                     </excludes>
                 </configuration>
                 <executions>
@@ -195,6 +201,25 @@
                         <goals>
                             <goal>report</goal>
                         </goals>
+                    </execution>
+                    <execution>
+                        <id>check</id>
+                        <phase>verify</phase>
+                        <goals><goal>check</goal></goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.80</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
