@@ -28,6 +28,9 @@ public class MovimentacaoEstoque {
     @Column(name = "ordem_servico_id")
     private Long ordemServicoId; // preenchido só quando origem = BAIXA_OS
 
+    @Column(name = "orcamento_id")
+    private Long orcamentoId;
+
     @Column(name = "usuario_id")
     private Long usuarioId; // preenchido só quando origem = MANUAL
 
@@ -36,22 +39,26 @@ public class MovimentacaoEstoque {
 
     public MovimentacaoEstoque() {}
 
-    public MovimentacaoEstoque(Peca peca, TipoMovimentacao tipo, Integer quantidade, Origem origem, Long ordemServicoId, Long usuarioId, LocalDateTime criadoEm) {
+    public MovimentacaoEstoque(Peca peca, TipoMovimentacao tipo, Integer quantidade, Origem origem,
+                              Long ordemServicoId, Long orcamentoId, Long usuarioId, LocalDateTime criadoEm) {
         this.peca = peca;
         this.tipo = tipo;
         this.quantidade = quantidade;
         this.origem = origem;
         this.ordemServicoId = ordemServicoId;
+        this.orcamentoId = orcamentoId;
         this.usuarioId = usuarioId;
         this.criadoEm = criadoEm;
     }
 
     public static MovimentacaoEstoque registrarManual(Peca peca, TipoMovimentacao tipo, Integer quantidade, Long usuarioId){
-        return new MovimentacaoEstoque(peca, tipo, quantidade, Origem.MANUAL, null, usuarioId,LocalDateTime.now());
+        return new MovimentacaoEstoque(peca, tipo, quantidade, Origem.MANUAL, null, null, usuarioId, LocalDateTime.now());
     }
 
-    public static MovimentacaoEstoque registrarAutomatica(Peca peca, Integer quantidade, Long ordemServicoId){
-        return new MovimentacaoEstoque(peca, TipoMovimentacao.SAIDA, quantidade, Origem.BAIXA_OS, ordemServicoId, null, LocalDateTime.now());
+    public static MovimentacaoEstoque registrarAutomatica(Peca peca, Integer quantidade, Long ordemServicoId,
+                                                           Long orcamentoId){
+        return new MovimentacaoEstoque(peca, TipoMovimentacao.SAIDA, quantidade, Origem.BAIXA_OS,
+                ordemServicoId, orcamentoId, null, LocalDateTime.now());
     }
 
     public Long getId() {
@@ -77,6 +84,8 @@ public class MovimentacaoEstoque {
     public Long getOrdemServicoId() {
         return ordemServicoId;
     }
+
+    public Long getOrcamentoId() { return orcamentoId; }
 
     public Long getUsuarioId() {
         return usuarioId;
