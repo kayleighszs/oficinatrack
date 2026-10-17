@@ -179,7 +179,7 @@ class PecaServiceTest {
         @DisplayName("deve incrementar o estoque quando o tipo é ENTRADA")
         void deveIncrementarEstoqueQuandoTipoEntrada() {
             Peca peca = Peca.cadastrar("Motor", BigDecimal.TEN, 10, 5);
-            when(pecaRepository.findById(1L)).thenReturn(Optional.of(peca));
+            when(pecaRepository.buscarPorIdParaAtualizacao(1L)).thenReturn(Optional.of(peca));
             when(pecaRepository.save(any(Peca.class))).thenAnswer(inv -> inv.getArgument(0));
 
             MovimentacaoEstoqueRequest request = new MovimentacaoEstoqueRequest(TipoMovimentacao.ENTRADA, 5);
@@ -194,7 +194,7 @@ class PecaServiceTest {
         @DisplayName("deve debitar o estoque quando o tipo é SAIDA")
         void deveDebitarEstoqueQuandoTipoSaida() {
             Peca peca = Peca.cadastrar("Motor", BigDecimal.TEN, 10, 5);
-            when(pecaRepository.findById(1L)).thenReturn(Optional.of(peca));
+            when(pecaRepository.buscarPorIdParaAtualizacao(1L)).thenReturn(Optional.of(peca));
             when(pecaRepository.save(any(Peca.class))).thenAnswer(inv -> inv.getArgument(0));
 
             MovimentacaoEstoqueRequest request = new MovimentacaoEstoqueRequest(TipoMovimentacao.SAIDA, 4);
@@ -208,7 +208,7 @@ class PecaServiceTest {
         @DisplayName("deve registrar a movimentação com origem MANUAL e o usuarioId hardcoded")
         void deveRegistrarMovimentacaoComOrigemManual() {
             Peca peca = Peca.cadastrar("Motor", BigDecimal.TEN, 10, 5);
-            when(pecaRepository.findById(1L)).thenReturn(Optional.of(peca));
+            when(pecaRepository.buscarPorIdParaAtualizacao(1L)).thenReturn(Optional.of(peca));
             when(pecaRepository.save(any(Peca.class))).thenAnswer(inv -> inv.getArgument(0));
 
             MovimentacaoEstoqueRequest request = new MovimentacaoEstoqueRequest(TipoMovimentacao.ENTRADA, 5);
@@ -225,7 +225,7 @@ class PecaServiceTest {
         @DisplayName("deve lançar EstoqueInsuficienteExcepetion quando a saída deixaria estoque negativo, sem registrar movimentação")
         void deveLancarEstoqueInsuficienteQuandoSaidaExcedeDisponivel() {
             Peca peca = Peca.cadastrar("Motor", BigDecimal.TEN, 2, 5);
-            when(pecaRepository.findById(1L)).thenReturn(Optional.of(peca));
+            when(pecaRepository.buscarPorIdParaAtualizacao(1L)).thenReturn(Optional.of(peca));
 
             MovimentacaoEstoqueRequest request = new MovimentacaoEstoqueRequest(TipoMovimentacao.SAIDA, 10);
 
@@ -239,7 +239,7 @@ class PecaServiceTest {
         @Test
         @DisplayName("deve lançar PecaNaoEncontradaException quando a peça não existe, sem registrar movimentação")
         void deveLancarPecaNaoEncontradaQuandoPecaNaoExisteParaMovimentar() {
-            when(pecaRepository.findById(99L)).thenReturn(Optional.empty());
+            when(pecaRepository.buscarPorIdParaAtualizacao(99L)).thenReturn(Optional.empty());
 
             MovimentacaoEstoqueRequest request = new MovimentacaoEstoqueRequest(TipoMovimentacao.ENTRADA, 5);
 

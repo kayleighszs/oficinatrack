@@ -9,6 +9,7 @@ import br.com.oficinatrack.ordemservico.domain.*;
 import br.com.oficinatrack.ordemservico.infra.OrdemServicoRepository;
 import br.com.oficinatrack.publico.api.dto.*;
 import br.com.oficinatrack.publico.application.*;
+import br.com.oficinatrack.relatorios.application.RelatorioService;
 import br.com.oficinatrack.veiculo.domain.*;
 import br.com.oficinatrack.veiculo.infra.VeiculoRepository;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,7 @@ class ConsultaPublicaIntegracaoTest {
     @Autowired MovimentacaoEstoqueRepository movimentacaoRepository;
     @Autowired AcessoPublicoService acessoService;
     @Autowired ConsultaPublicaService consultaService;
+    @Autowired RelatorioService relatorioService;
 
     @Test
     void deveAprovarOrcamentoEBaixarEstoqueUmaUnicaVez() {
@@ -68,5 +70,12 @@ class ConsultaPublicaIntegracaoTest {
         assertEquals(StatusOrdemServico.EM_EXECUCAO, os.getStatus());
         assertEquals(7, pecaRepository.findById(peca.getId()).orElseThrow().getQuantidadeEstoque());
         assertEquals(1, movimentacaoRepository.count());
+
+        os.finalizarExecucao();
+        os.confirmarEntrega();
+        ordemRepository.flush();
+        assertEquals(StatusOrdemServico.ENTREGUE, os.getStatus());
+        assertEquals(1L, relatorioService.tempoMedioExecucao().quantidadeOrdens());
+        assertNotNull(relatorioService.tempoMedioExecucao().segundosMedios());
     }
 }

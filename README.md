@@ -37,6 +37,30 @@ set +a
 
 O projeto usa PostgreSQL, Flyway, Spring Security com JWT, OpenAPI e JaCoCo.
 
+## Fluxo principal
+
+1. Cadastre cliente e veículo.
+2. Abra a OS e inicie o diagnóstico.
+3. Inclua serviços e peças.
+4. Calcule e envie o orçamento.
+5. Emita um acesso público para o cliente.
+6. O cliente consulta e decide o orçamento usando esse token.
+7. Finalize o serviço e confirme a entrega.
+
+Rotas administrativas usam `Authorization: Bearer <jwt>`. Rotas sob `/publico` usam o token exclusivo da OS, também como Bearer. Os contratos completos ficam disponíveis no Swagger.
+
+Consultas administrativas:
+
+- `GET /ordens-servico` aceita status, cliente, veículo, período e paginação.
+- `GET /ordens-servico/{id}` retorna a OS completa.
+- `GET /relatorios/tempo-medio-execucao` retorna a média entre execução e finalização.
+
+Tokens públicos são exibidos somente na emissão. Guarde o valor entregue ao cliente; o banco armazena apenas seu hash.
+
+## Qualidade
+
+`./mvnw verify` executa testes unitários e integrados em PostgreSQL via Testcontainers. O build falha quando a cobertura das regras de domínio e aplicação fica abaixo de 80% das linhas.
+
 ## Documentação do domínio
 
 Diagramas e mapeamento dos épicos estão no diretório `docs/`.

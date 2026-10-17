@@ -6,6 +6,7 @@ spring:
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:postgres}
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: validate
     show-sql: false
@@ -22,3 +23,8 @@ api:
       expiration: ${JWT_EXPIRATION:1800000}
   public-access:
     expiration-days: ${PUBLIC_ACCESS_EXPIRATION_DAYS:7}
+springdoc:
+  api-docs:
+    enabled: ${OPENAPI_ENABLED:true}
+  swagger-ui:
+    enabled: ${OPENAPI_ENABLED:true}

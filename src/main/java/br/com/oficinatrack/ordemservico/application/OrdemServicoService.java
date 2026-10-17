@@ -15,6 +15,9 @@ import br.com.oficinatrack.veiculo.domain.Veiculo;
 import br.com.oficinatrack.veiculo.infra.VeiculoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.*;
+import br.com.oficinatrack.ordemservico.domain.StatusOrdemServico;
+import java.time.LocalDateTime;
 
 @Service
 public class OrdemServicoService {
@@ -105,6 +108,13 @@ public class OrdemServicoService {
 
     @Transactional(readOnly = true)
     public OrdemServicoResponse detalhar(Long id) { return OrdemServicoResponse.de(buscar(id)); }
+
+    @Transactional(readOnly = true)
+    public Page<OrdemServicoResumoResponse> listar(StatusOrdemServico status, Long clienteId, Long veiculoId,
+                                                   LocalDateTime inicio, LocalDateTime fim, Pageable pageable) {
+        return ordemRepository.buscar(status, clienteId, veiculoId, inicio, fim, pageable)
+                .map(OrdemServicoResumoResponse::de);
+    }
 
     private OrdemServico buscar(Long id) {
         return ordemRepository.findById(id)

@@ -16,6 +16,10 @@ public interface PecaRepository extends JpaRepository<Peca, Long> {
     @Query("SELECT p FROM Peca p WHERE p.id IN :ids ORDER BY p.id")
     java.util.List<Peca> buscarTodasParaAtualizacao(@Param("ids") java.util.Collection<Long> ids);
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT p FROM Peca p WHERE p.id = :id")
+    java.util.Optional<Peca> buscarPorIdParaAtualizacao(@Param("id") Long id);
+
     @Query("""
         SELECT p FROM Peca p
         WHERE (:nome IS NULL OR LOWER(p.nome) LIKE LOWER(CONCAT('%', :nome, '%')))

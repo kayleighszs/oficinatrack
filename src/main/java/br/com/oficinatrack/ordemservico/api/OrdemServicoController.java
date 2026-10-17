@@ -9,6 +9,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import java.net.URI;
+import java.time.LocalDateTime;
+import org.springframework.data.domain.*;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
+import br.com.oficinatrack.ordemservico.domain.StatusOrdemServico;
 
 @RestController
 @RequestMapping("/ordens-servico")
@@ -65,6 +70,18 @@ public class OrdemServicoController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('GESTOR', 'ATENDENTE', 'MECANICO')")
     public OrdemServicoResponse detalhar(@PathVariable @Positive Long id) { return service.detalhar(id); }
+
+    @GetMapping
+    @PreAuthorize("hasAnyRole('GESTOR', 'ATENDENTE', 'MECANICO')")
+    public Page<OrdemServicoResumoResponse> listar(
+            @RequestParam(required = false) StatusOrdemServico status,
+            @RequestParam(required = false) Long clienteId,
+            @RequestParam(required = false) Long veiculoId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime inicio,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fim,
+            @PageableDefault(sort = "criadoEm", direction = Sort.Direction.DESC) Pageable pageable) {
+        return service.listar(status, clienteId, veiculoId, inicio, fim, pageable);
+    }
 
     @GetMapping("/{id}/historico-status")
     @PreAuthorize("hasAnyRole('GESTOR', 'ATENDENTE', 'MECANICO')")
