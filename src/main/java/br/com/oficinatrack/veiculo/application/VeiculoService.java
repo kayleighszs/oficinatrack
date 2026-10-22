@@ -66,8 +66,11 @@ public class VeiculoService {
 
         if (request.getPlaca() != null) {
             Placa novaPlaca = new Placa(request.getPlaca());
-            if (!novaPlaca.getValue().equals(veiculo.getPlaca().getValue())) {
-                validarPlacaDisponivel(novaPlaca);
+            if (!novaPlaca.equals(veiculo.getPlaca())) {
+                // conversão antigo <-> Mercosul da própria placa não precisa checar duplicidade
+                if (!novaPlaca.mesmoVeiculoQue(veiculo.getPlaca())) {
+                    validarPlacaDisponivel(novaPlaca);
+                }
                 veiculo.setPlaca(novaPlaca);
             }
         }
@@ -96,8 +99,10 @@ public class VeiculoService {
     }
 
     private void validarPlacaDisponivel(Placa placa) {
-        if (veiculoRepository.existsByPlacaValue(placa.getValue())) {
-            throw new RegraDeNegocioException("Já existe veículo com a placa " + placa.getValue());
+        // ABC1234 e ABC1C34 são o mesmo veículo (antes e depois da conversão para Mercosul)
+        if (veiculoRepository.existsByPlacaValueIn(placa.formasEquivalentes())) {
+            throw new RegraDeNegocioException("Já existe veículo com a placa " + placa.getValue()
+                    + placa.equivalente().map(e -> " ou sua equivalente " + e.getValue()).orElse(""));
         }
     }
 
