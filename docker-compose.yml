@@ -1,18 +1,18 @@
-version: '3.8'
 services:
   db:
-    image: postgres:15
+    image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: oficina
-      POSTGRES_USER: postgres
+      POSTGRES_DB: ${DB_NAME:-oficina}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
     ports:
-      - "5432:5432"
+      # Só no localhost (DBeaver/psql). A 5432 costuma estar ocupada por um Postgres local.
+      - "127.0.0.1:${DB_PORT:-5433}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d oficina"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -24,10 +24,11 @@ services:
       db:
         condition: service_healthy
     environment:
-      DB_URL: jdbc:postgresql://db:5432/oficina
-      DB_USERNAME: postgres
+      # Dentro da rede do compose o banco é acessado pelo nome do serviço, não por localhost
+      DB_URL: jdbc:postgresql://db:5432/${DB_NAME:-oficina}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
       DB_PASSWORD: ${DB_PASSWORD:-postgres}
-      JWT_SECRET: ${JWT_SECRET}
+      JWT_SECRET: ${JWT_SECRET:?Defina JWT_SECRET no .env - copie o exemplo com cp .env.example .env}
       JWT_EXPIRATION: ${JWT_EXPIRATION:-1800000}
       GESTOR_USERNAME: ${GESTOR_USERNAME:-}
       GESTOR_PASSWORD: ${GESTOR_PASSWORD:-}
@@ -38,7 +39,13 @@ services:
       PUBLIC_ACCESS_EXPIRATION_DAYS: ${PUBLIC_ACCESS_EXPIRATION_DAYS:-7}
       OPENAPI_ENABLED: ${OPENAPI_ENABLED:-true}
     ports:
-      - "8080:8080"
+      - "${APP_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 8080 || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 40s
 
 volumes:
   postgres_data:
