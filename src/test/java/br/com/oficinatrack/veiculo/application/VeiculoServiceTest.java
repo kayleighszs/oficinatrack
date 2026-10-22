@@ -67,7 +67,7 @@ class VeiculoServiceTest {
     @Test
     void cadastraVeiculoVinculadoAoCliente() {
         when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
-        when(veiculoRepository.existsByPlacaValue("ABC1D23")).thenReturn(false);
+        when(veiculoRepository.existsByPlacaValueIn(List.of("ABC1D23", "ABC1323"))).thenReturn(false);
         when(veiculoRepository.save(any(Veiculo.class))).thenAnswer(inv -> {
             Veiculo v = inv.getArgument(0);
             v.setId(10L);
@@ -93,7 +93,7 @@ class VeiculoServiceTest {
     @Test
     void naoCadastraPlacaDuplicada() {
         when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
-        when(veiculoRepository.existsByPlacaValue("ABC1D23")).thenReturn(true);
+        when(veiculoRepository.existsByPlacaValueIn(List.of("ABC1D23", "ABC1323"))).thenReturn(true);
 
         assertThrows(RegraDeNegocioException.class, () -> veiculoService.cadastrar(request()));
         verify(veiculoRepository, never()).save(any());
@@ -144,10 +144,33 @@ class VeiculoServiceTest {
     @Test
     void naoTrocaParaPlacaDeOutroVeiculo() {
         when(veiculoRepository.findById(10L)).thenReturn(Optional.of(veiculoExistente()));
-        when(veiculoRepository.existsByPlacaValue("XYZ9876")).thenReturn(true);
+        when(veiculoRepository.existsByPlacaValueIn(List.of("XYZ9876", "XYZ9I76"))).thenReturn(true);
         VeiculoUpdateRequest update = new VeiculoUpdateRequest();
         update.setPlaca("XYZ9876");
 
         assertThrows(RegraDeNegocioException.class, () -> veiculoService.atualizar(10L, update));
+    }
+
+    @Test
+    void naoCadastraPlacaMercosulSeAPlacaAntigaEquivalenteJaExiste() {
+        when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
+        when(veiculoRepository.existsByPlacaValueIn(List.of("ABC1D23", "ABC1323"))).thenReturn(true);
+
+        RegraDeNegocioException erro = assertThrows(RegraDeNegocioException.class,
+                () -> veiculoService.cadastrar(request()));
+        assertTrue(erro.getMessage().contains("ABC1323"));
+        verify(veiculoRepository, never()).save(any());
+    }
+
+    @Test
+    void converteAPropriaPlacaParaOutroPadraoSemChecarDuplicidade() {
+        when(veiculoRepository.findById(10L)).thenReturn(Optional.of(veiculoExistente()));
+        VeiculoUpdateRequest update = new VeiculoUpdateRequest();
+        update.setPlaca("ABC-1323");
+
+        VeiculoResponse response = veiculoService.atualizar(10L, update);
+
+        assertEquals("ABC1323", response.getPlaca());
+        verify(veiculoRepository, never()).existsByPlacaValueIn(any());
     }
 }
