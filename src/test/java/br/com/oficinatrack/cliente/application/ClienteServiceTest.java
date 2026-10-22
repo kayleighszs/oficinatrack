@@ -98,6 +98,18 @@ class ClienteServiceTest {
     }
 
     @Test
+    void cadastrarCnpjAlfanumericoDeveManterLetrasEDefinirTipoJuridica() {
+        when(clienteRepository.existsByCpfCnpj("12ABC34501DE35")).thenReturn(false);
+
+        clienteService.cadastrar(requestCadastro("Oficina LTDA", "12.abc.345/01de-35"));
+
+        ArgumentCaptor<Cliente> captor = ArgumentCaptor.forClass(Cliente.class);
+        verify(clienteRepository).save(captor.capture());
+        assertEquals("12ABC34501DE35", captor.getValue().getCpfCnpj());
+        assertEquals(TipoPessoa.JURIDICA, captor.getValue().getTipoPessoa());
+    }
+
+    @Test
     void cadastrarDeveFalharQuandoDocumentoJaExiste() {
         when(clienteRepository.existsByCpfCnpj("52998224725")).thenReturn(true);
 

@@ -1,6 +1,6 @@
 package br.com.oficinatrack.cliente.api.dto;
 
-import br.com.oficinatrack.cliente.validation.ValidCpf;
+import br.com.oficinatrack.shared.validation.CpfCnpj;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -13,7 +13,7 @@ public class CadastrarClienteRequest {
     private String nome;
 
     @NotBlank(message = "CPF/CNPJ é obrigatório")
-    @ValidCpf(message = "CPF/CNPJ inválido")
+    @CpfCnpj(message = "CPF/CNPJ inválido")
     private String cpfCnpj;
 
     @Size(max = 20, message = "Telefone deve ter no máximo 20 caracteres")
