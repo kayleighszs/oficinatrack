@@ -25,7 +25,7 @@ public interface SwaggerCliente {
 
     @Operation(
             summary = "Cadastra um novo cliente",
-            description = "Realiza o cadastro de um cliente com nome, CPF/CNPJ (a máscara é removida e o tipo de pessoa é definido automaticamente), telefone e e-mail opcionais. CPF/CNPJ duplicado retorna 400."
+            description = "Realiza o cadastro de um cliente com nome, CPF/CNPJ (a máscara é removida, o CNPJ alfanumérico é aceito e o tipo de pessoa é definido automaticamente), telefone e e-mail opcionais. CPF/CNPJ duplicado retorna 400."
     )
     @ApiResponses(value = {
             @ApiResponse(

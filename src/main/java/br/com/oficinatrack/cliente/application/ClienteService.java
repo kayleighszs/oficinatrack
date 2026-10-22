@@ -9,6 +9,7 @@ import br.com.oficinatrack.cliente.infra.ClienteRepository;
 import br.com.oficinatrack.cliente.mapper.ClienteMapperInterface;
 import br.com.oficinatrack.shared.exception.RecursoNaoEncontradoException;
 import br.com.oficinatrack.shared.exception.RegraDeNegocioException;
+import br.com.oficinatrack.shared.validation.DocumentoFiscal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,8 +17,6 @@ import java.util.List;
 
 @Service
 public class ClienteService {
-
-    private static final int TAMANHO_CPF = 11;
 
     private final ClienteRepository clienteRepository;
     private final ClienteMapperInterface clienteMapper;
@@ -29,7 +28,7 @@ public class ClienteService {
 
     @Transactional
     public void cadastrar(CadastrarClienteRequest request) {
-        String documento = somenteDigitos(request.getCpfCnpj());
+        String documento = DocumentoFiscal.normalizar(request.getCpfCnpj());
 
         if (clienteRepository.existsByCpfCnpj(documento)) {
             throw new RegraDeNegocioException("já existe um cliente cadastrado com o CPF/CNPJ informado");
@@ -38,7 +37,7 @@ public class ClienteService {
         Cliente cliente = clienteMapper.toEntity(request);
         cliente.setNome(cliente.getNome().trim());
         cliente.setCpfCnpj(documento);
-        cliente.setTipoPessoa(documento.length() == TAMANHO_CPF ? TipoPessoa.FISICA : TipoPessoa.JURIDICA);
+        cliente.setTipoPessoa(DocumentoFiscal.isCpf(documento) ? TipoPessoa.FISICA : TipoPessoa.JURIDICA);
         cliente.setAtivo(true);
         clienteRepository.save(cliente);
     }
@@ -64,7 +63,7 @@ public class ClienteService {
     public List<ClienteResponse> listarClientes(String cpfCnpj, String nome) {
         // string vazia = "sem filtro"; evita enviar null, que o PostgreSQL tipa como bytea
         String nomeFiltro = nome == null ? "" : nome.trim();
-        String cpfFiltro = cpfCnpj == null ? "" : somenteDigitos(cpfCnpj);
+        String cpfFiltro = cpfCnpj == null ? "" : DocumentoFiscal.normalizar(cpfCnpj);
 
         List<Cliente> clientes = clienteRepository.buscarClientesComFiltros(nomeFiltro, cpfFiltro);
         return clienteMapper.toResponseList(clientes);
@@ -78,9 +77,5 @@ public class ClienteService {
     private Cliente buscarEntidade(Long id) {
         return clienteRepository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("cliente não encontrado com o id: " + id));
-    }
-
-    private String somenteDigitos(String valor) {
-        return valor.replaceAll("\\D", "");
     }
 }
