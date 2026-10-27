@@ -40,6 +40,8 @@ public class Usuario implements UserDetails {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
+    public Long getId() {return id;}
+
     public String getSenha() {
         return senha;
     }
