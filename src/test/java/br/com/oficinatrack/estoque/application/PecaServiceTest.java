@@ -175,6 +175,8 @@ class PecaServiceTest {
     @DisplayName("movimentarEstoque")
     class MovimentarEstoque {
 
+        private static final Long USUARIO_ID = 7L;
+
         @Test
         @DisplayName("deve incrementar o estoque quando o tipo é ENTRADA")
         void deveIncrementarEstoqueQuandoTipoEntrada() {
@@ -184,7 +186,7 @@ class PecaServiceTest {
 
             MovimentacaoEstoqueRequest request = new MovimentacaoEstoqueRequest(TipoMovimentacao.ENTRADA, 5);
 
-            pecaService.movimentarEstoque(1L, request);
+            pecaService.movimentarEstoque(1L, request, USUARIO_ID);
 
             assertThat(peca.getQuantidadeEstoque()).isEqualTo(15);
             verify(movimentacaoEstoqueRepository).save(any(MovimentacaoEstoque.class));
@@ -199,13 +201,13 @@ class PecaServiceTest {
 
             MovimentacaoEstoqueRequest request = new MovimentacaoEstoqueRequest(TipoMovimentacao.SAIDA, 4);
 
-            pecaService.movimentarEstoque(1L, request);
+            pecaService.movimentarEstoque(1L, request,USUARIO_ID);
 
             assertThat(peca.getQuantidadeEstoque()).isEqualTo(6);
         }
 
         @Test
-        @DisplayName("deve registrar a movimentação com origem MANUAL e o usuarioId hardcoded")
+        @DisplayName("deve registrar a movimentação com origem MANUAL e o usuarioId do usuário autenticado")
         void deveRegistrarMovimentacaoComOrigemManual() {
             Peca peca = Peca.cadastrar("Motor", BigDecimal.TEN, 10, 5);
             when(pecaRepository.buscarPorIdParaAtualizacao(1L)).thenReturn(Optional.of(peca));
@@ -213,12 +215,12 @@ class PecaServiceTest {
 
             MovimentacaoEstoqueRequest request = new MovimentacaoEstoqueRequest(TipoMovimentacao.ENTRADA, 5);
 
-            pecaService.movimentarEstoque(1L, request);
+            pecaService.movimentarEstoque(1L, request, USUARIO_ID);
 
             ArgumentCaptor<MovimentacaoEstoque> captor = ArgumentCaptor.forClass(MovimentacaoEstoque.class);
             verify(movimentacaoEstoqueRepository).save(captor.capture());
             assertThat(captor.getValue().getOrigem()).isEqualTo(br.com.oficinatrack.estoque.domain.Origem.MANUAL);
-            assertThat(captor.getValue().getUsuarioId()).isEqualTo(1L);
+            assertThat(captor.getValue().getUsuarioId()).isEqualTo(USUARIO_ID);
         }
 
         @Test
@@ -229,7 +231,7 @@ class PecaServiceTest {
 
             MovimentacaoEstoqueRequest request = new MovimentacaoEstoqueRequest(TipoMovimentacao.SAIDA, 10);
 
-            assertThatThrownBy(() -> pecaService.movimentarEstoque(1L, request))
+            assertThatThrownBy(() -> pecaService.movimentarEstoque(1L, request, USUARIO_ID))
                     .isInstanceOf(EstoqueInsuficienteExcepetion.class);
 
             verify(pecaRepository, never()).save(any());
@@ -243,7 +245,7 @@ class PecaServiceTest {
 
             MovimentacaoEstoqueRequest request = new MovimentacaoEstoqueRequest(TipoMovimentacao.ENTRADA, 5);
 
-            assertThatThrownBy(() -> pecaService.movimentarEstoque(99L, request))
+            assertThatThrownBy(() -> pecaService.movimentarEstoque(99L, request, USUARIO_ID))
                     .isInstanceOf(PecaNaoEncontradaException.class);
 
             verify(movimentacaoEstoqueRepository, never()).save(any());
