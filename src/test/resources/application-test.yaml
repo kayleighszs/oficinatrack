@@ -1,0 +1,12 @@
+api:
+  security:
+    token:
+      secret: segredo-somente-para-testes-nao-usar-em-producao-0123456789
+      expiration: 1800000
+
+GESTOR_USERNAME: gestor
+GESTOR_PASSWORD: gestor123
+ATENDENTE_USERNAME: atendente
+ATENDENTE_PASSWORD: atendente123
+MECANICO_USERNAME: mecanico
+MECANICO_PASSWORD: mecanico123

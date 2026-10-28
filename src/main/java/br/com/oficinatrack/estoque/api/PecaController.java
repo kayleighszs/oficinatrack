@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import br.com.oficinatrack.auth.domain.Usuario;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 @RestController
 @RequestMapping("/pecas")
@@ -58,8 +60,8 @@ public class PecaController {
 
     @PreAuthorize("hasRole('GESTOR')")
     @PatchMapping("/{id}/estoque")
-    public ResponseEntity<PecaResponse> movimentarEstoque(@PathVariable Long id, @Valid @RequestBody MovimentacaoEstoqueRequest movimentacaoEstoqueRequest){
-        PecaResponse response = pecaService.movimentarEstoque(id, movimentacaoEstoqueRequest);
+    public ResponseEntity<PecaResponse> movimentarEstoque(@PathVariable Long id, @Valid @RequestBody MovimentacaoEstoqueRequest movimentacaoEstoqueRequest, @AuthenticationPrincipal Usuario usuarioLogado){
+        PecaResponse response = pecaService.movimentarEstoque(id, movimentacaoEstoqueRequest, usuarioLogado.getId());
         return ResponseEntity.ok(response);
     }
 

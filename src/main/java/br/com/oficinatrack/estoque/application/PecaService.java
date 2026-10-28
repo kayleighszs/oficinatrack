@@ -32,7 +32,9 @@ public class PecaService {
 
     // metodos de get
     public Page<PecaResponse> listar(String nome, Boolean estoqueBaixo, Pageable pageable){
-        return pecaRepository.buscarComFiltros(nome, estoqueBaixo, pageable)
+        String nomeFiltro = nome == null ? "" : nome.trim();
+
+        return pecaRepository.buscarComFiltros(nomeFiltro, estoqueBaixo, pageable)
                 .map(PecaResponse::from);
     }
 
@@ -79,7 +81,7 @@ public class PecaService {
     }
 
     @Transactional
-    public PecaResponse movimentarEstoque(Long id, MovimentacaoEstoqueRequest request){
+    public PecaResponse movimentarEstoque(Long id, MovimentacaoEstoqueRequest request, Long usuarioId){
         Peca peca = pecaRepository.buscarPorIdParaAtualizacao(id)
                 .orElseThrow(() -> new PecaNaoEncontradaException(
                                 "Peça não encontrada com o ID: " + id
@@ -98,8 +100,7 @@ public class PecaService {
                 pecaAtualizada,
                 request.getTipo(),
                 request.getQuantidade(),
-                1L
-                // usuarioAtual() // quando o user for implementado eu coloco.
+                usuarioId
         );
 
         movimentacaoEstoqueRepository.save(movimentacao);
