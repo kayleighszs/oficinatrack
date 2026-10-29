@@ -7,5 +7,6 @@ public enum StatusOrdemServico {
     EM_EXECUCAO,
     FINALIZADA,
     ENTREGUE,
-    ORCAMENTO_RECUSADO
+    ORCAMENTO_RECUSADO,
+    CANCELADA
 }

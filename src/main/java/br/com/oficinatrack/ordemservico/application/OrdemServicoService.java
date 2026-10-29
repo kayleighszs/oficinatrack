@@ -1,18 +1,10 @@
 package br.com.oficinatrack.ordemservico.application;
 
-import br.com.oficinatrack.catalogoservicos.domain.Servico;
-import br.com.oficinatrack.catalogoservicos.infra.ServicoRepository;
-import br.com.oficinatrack.cliente.domain.Cliente;
-import br.com.oficinatrack.cliente.infra.ClienteRepository;
-import br.com.oficinatrack.estoque.domain.Peca;
-import br.com.oficinatrack.estoque.infrastructure.PecaRepository;
 import br.com.oficinatrack.ordemservico.api.dto.*;
+import br.com.oficinatrack.ordemservico.application.port.*;
 import br.com.oficinatrack.ordemservico.domain.OrdemServico;
 import br.com.oficinatrack.ordemservico.infra.OrdemServicoRepository;
 import br.com.oficinatrack.shared.exception.RecursoNaoEncontradoException;
-import br.com.oficinatrack.shared.exception.RegraDeNegocioException;
-import br.com.oficinatrack.veiculo.domain.Veiculo;
-import br.com.oficinatrack.veiculo.infra.VeiculoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.*;
@@ -22,88 +14,81 @@ import java.time.LocalDateTime;
 @Service
 public class OrdemServicoService {
     private final OrdemServicoRepository ordemRepository;
-    private final ClienteRepository clienteRepository;
-    private final VeiculoRepository veiculoRepository;
-    private final ServicoRepository servicoRepository;
-    private final PecaRepository pecaRepository;
+    private final ClienteVeiculoPort clienteVeiculoPort;
+    private final CatalogoServicoPort catalogoServicoPort;
+    private final EstoquePort estoquePort;
 
-    public OrdemServicoService(OrdemServicoRepository ordemRepository, ClienteRepository clienteRepository,
-                               VeiculoRepository veiculoRepository, ServicoRepository servicoRepository,
-                               PecaRepository pecaRepository) {
+    public OrdemServicoService(OrdemServicoRepository ordemRepository, ClienteVeiculoPort clienteVeiculoPort,
+                               CatalogoServicoPort catalogoServicoPort, EstoquePort estoquePort) {
         this.ordemRepository = ordemRepository;
-        this.clienteRepository = clienteRepository;
-        this.veiculoRepository = veiculoRepository;
-        this.servicoRepository = servicoRepository;
-        this.pecaRepository = pecaRepository;
+        this.clienteVeiculoPort = clienteVeiculoPort;
+        this.catalogoServicoPort = catalogoServicoPort;
+        this.estoquePort = estoquePort;
     }
 
     @Transactional
     public OrdemServicoResponse criar(CriarOrdemServicoRequest request) {
-        Cliente cliente = clienteRepository.findById(request.clienteId())
-                .filter(c -> Boolean.TRUE.equals(c.getAtivo()))
-                .orElseThrow(() -> new RegraDeNegocioException("Cliente inexistente ou inativo."));
-        Veiculo veiculo = veiculoRepository.findById(request.veiculoId())
-                .filter(Veiculo::isAtivo)
-                .orElseThrow(() -> new RegraDeNegocioException("Veículo inexistente ou inativo."));
-        if (!veiculo.getCliente().getId().equals(cliente.getId()))
-            throw new RegraDeNegocioException("Veículo não pertence ao cliente informado.");
-        return OrdemServicoResponse.de(ordemRepository.save(OrdemServico.abrir(cliente.getId(), veiculo.getId())));
+        clienteVeiculoPort.validarVinculo(request.clienteId(), request.veiculoId());
+        return OrdemServicoResponse.de(ordemRepository.save(OrdemServico.abrir(request.clienteId(), request.veiculoId())));
     }
 
     @Transactional
     public OrdemServicoResponse iniciarDiagnostico(Long id) {
         OrdemServico os = buscar(id);
         os.iniciarDiagnostico();
-        return OrdemServicoResponse.de(os);
+        return responder(os);
     }
 
     @Transactional
     public OrdemServicoResponse adicionarServico(Long id, AdicionarItemRequest request) {
         OrdemServico os = buscar(id);
-        Servico servico = servicoRepository.findById(request.referenciaId())
-                .filter(s -> Boolean.TRUE.equals(s.getAtivo()))
-                .orElseThrow(() -> new RegraDeNegocioException("Serviço inexistente ou inativo."));
-        os.adicionarServico(servico.getId(), servico.getNome(), servico.getValor(), request.quantidade());
-        return OrdemServicoResponse.de(os);
+        ItemOrcavel servico = catalogoServicoPort.buscarServicoAtivo(request.referenciaId());
+        os.adicionarServico(servico.referenciaId(), servico.descricao(), servico.valorUnitario(), request.quantidade());
+        return responder(os);
     }
 
     @Transactional
     public OrdemServicoResponse adicionarPeca(Long id, AdicionarItemRequest request) {
         OrdemServico os = buscar(id);
-        Peca peca = pecaRepository.findById(request.referenciaId())
-                .filter(p -> Boolean.TRUE.equals(p.getAtivo()))
-                .orElseThrow(() -> new RegraDeNegocioException("Peça inexistente ou inativa."));
-        os.adicionarPeca(peca.getId(), peca.getNome(), peca.getValorUnitario(), request.quantidade());
-        return OrdemServicoResponse.de(os);
+        ItemOrcavel peca = estoquePort.buscarPecaDisponivel(request.referenciaId(), request.quantidade());
+        os.adicionarPeca(peca.referenciaId(), peca.descricao(), peca.valorUnitario(), request.quantidade());
+        return responder(os);
     }
 
     @Transactional
     public OrdemServicoResponse calcularOrcamento(Long id) {
         OrdemServico os = buscar(id);
         os.calcularOrcamento();
-        ordemRepository.flush();
-        return OrdemServicoResponse.de(os);
+        return responder(os);
     }
 
     @Transactional
     public OrdemServicoResponse enviarOrcamento(Long id, Long orcamentoId) {
         OrdemServico os = buscar(id);
         os.enviarOrcamento(orcamentoId);
-        return OrdemServicoResponse.de(os);
+        return responder(os);
     }
 
     @Transactional
     public OrdemServicoResponse finalizar(Long id) {
         OrdemServico os = buscar(id);
         os.finalizarExecucao();
-        return OrdemServicoResponse.de(os);
+        return responder(os);
     }
 
     @Transactional
     public OrdemServicoResponse entregar(Long id) {
         OrdemServico os = buscar(id);
         os.confirmarEntrega();
-        return OrdemServicoResponse.de(os);
+        return responder(os);
+    }
+
+    @Transactional
+    public OrdemServicoResponse cancelar(Long id, CancelarOrdemServicoRequest request) {
+        OrdemServico os = ordemRepository.findByIdParaAtualizacao(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Ordem de serviço não encontrada."));
+        os.cancelar(request.motivo());
+        return responder(os);
     }
 
     @Transactional(readOnly = true)
@@ -119,5 +104,11 @@ public class OrdemServicoService {
     private OrdemServico buscar(Long id) {
         return ordemRepository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Ordem de serviço não encontrada."));
+    }
+
+    // grava antes de montar a resposta, para itens, orçamentos e histórico novos já virem com id
+    private OrdemServicoResponse responder(OrdemServico os) {
+        ordemRepository.flush();
+        return OrdemServicoResponse.de(os);
     }
 }

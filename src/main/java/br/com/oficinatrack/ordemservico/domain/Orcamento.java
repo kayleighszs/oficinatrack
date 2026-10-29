@@ -53,6 +53,10 @@ public class Orcamento {
         if (status == StatusOrcamento.CALCULADO) status = StatusOrcamento.SUBSTITUIDO;
     }
 
+    void cancelar() {
+        if (status == StatusOrcamento.CALCULADO || status == StatusOrcamento.ENVIADO) status = StatusOrcamento.CANCELADO;
+    }
+
     void enviar() {
         if (status != StatusOrcamento.CALCULADO) throw new ConflitoException("Orçamento não pode ser enviado.");
         status = StatusOrcamento.ENVIADO;

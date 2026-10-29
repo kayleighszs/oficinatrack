@@ -57,7 +57,9 @@ class BaixaEstoqueIntegrationTest extends OrdemServicoFixture {
 
         decidir(c, "APROVADO")
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.orcamentos[0].status").value("APROVADO"));
+                .andExpect(jsonPath("$.orcamentos[0].status").value("APROVADO"))
+                .andExpect(jsonPath("$.historico[3].novo").value("EM_EXECUCAO"))
+                .andExpect(jsonPath("$.historico[3].id").isNumber());
 
         assertEstoque(gestor, c.pecaId(), 6);
 
@@ -113,7 +115,8 @@ class BaixaEstoqueIntegrationTest extends OrdemServicoFixture {
 
         decidir(c, "RECUSADO")
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.orcamentos[0].status").value("RECUSADO"));
+                .andExpect(jsonPath("$.orcamentos[0].status").value("RECUSADO"))
+                .andExpect(jsonPath("$.historico[3].id").isNumber());
 
         assertEstoque(gestor, c.pecaId(), 10);
         assertThat(baixasDa(c.pecaId())).isEmpty();

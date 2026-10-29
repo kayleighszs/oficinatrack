@@ -1,8 +1,8 @@
 package br.com.oficinatrack.publico.application;
 
-import br.com.oficinatrack.estoque.domain.*;
-import br.com.oficinatrack.estoque.infrastructure.*;
 import br.com.oficinatrack.ordemservico.api.dto.OrdemServicoResponse;
+import br.com.oficinatrack.ordemservico.application.port.EstoquePort;
+import br.com.oficinatrack.ordemservico.application.port.EstoquePort.ConsumoPeca;
 import br.com.oficinatrack.ordemservico.domain.*;
 import br.com.oficinatrack.ordemservico.infra.OrdemServicoRepository;
 import br.com.oficinatrack.publico.api.dto.ConsultaPublicaResponse.*;
@@ -11,23 +11,18 @@ import br.com.oficinatrack.shared.exception.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 public class ConsultaPublicaService {
     private final AcessoPublicoService acessoService;
     private final OrdemServicoRepository ordemRepository;
-    private final PecaRepository pecaRepository;
-    private final MovimentacaoEstoqueRepository movimentacaoRepository;
+    private final EstoquePort estoquePort;
 
     public ConsultaPublicaService(AcessoPublicoService acessoService, OrdemServicoRepository ordemRepository,
-                                  PecaRepository pecaRepository,
-                                  MovimentacaoEstoqueRepository movimentacaoRepository) {
+                                  EstoquePort estoquePort) {
         this.acessoService = acessoService;
         this.ordemRepository = ordemRepository;
-        this.pecaRepository = pecaRepository;
-        this.movimentacaoRepository = movimentacaoRepository;
+        this.estoquePort = estoquePort;
     }
 
     @Transactional(readOnly = true)
@@ -60,7 +55,8 @@ public class ConsultaPublicaService {
             if (orcamento.getStatus() == StatusOrcamento.APROVADO) return OrdemServicoResponse.de(os);
             if (orcamento.getStatus() != StatusOrcamento.ENVIADO)
                 throw new ConflitoException("Orçamento já recebeu uma decisão diferente.");
-            baixarEstoque(os, orcamento);
+            estoquePort.baixar(os.getId(), orcamento.getId(), os.getItensPeca().stream()
+                    .map(item -> new ConsumoPeca(item.getPecaId(), item.getQuantidade())).toList());
             os.aprovarOrcamento(orcamento);
         } else {
             if (orcamento.getStatus() == StatusOrcamento.RECUSADO) return OrdemServicoResponse.de(os);
@@ -68,24 +64,8 @@ public class ConsultaPublicaService {
                 throw new ConflitoException("Orçamento já recebeu uma decisão diferente.");
             os.recusarOrcamento(orcamento, request.motivo());
         }
+        ordemRepository.flush();
         return OrdemServicoResponse.de(os);
-    }
-
-    private void baixarEstoque(OrdemServico os, Orcamento orcamento) {
-        List<Long> ids = os.getItensPeca().stream().map(ItemPecaOrdem::getPecaId).sorted().toList();
-        if (ids.isEmpty()) return;
-        Map<Long, Peca> pecas = pecaRepository.buscarTodasParaAtualizacao(ids).stream()
-                .collect(Collectors.toMap(Peca::getId, Function.identity()));
-        if (pecas.size() != ids.size()) throw new ConflitoException("Uma peça do orçamento não existe mais.");
-
-        for (ItemPecaOrdem item : os.getItensPeca()) {
-            Peca peca = pecas.get(item.getPecaId());
-            if (!Boolean.TRUE.equals(peca.getAtivo()))
-                throw new ConflitoException("Peça inativa não pode ser baixada: " + peca.getNome());
-            peca.debitarEstoque(item.getQuantidade());
-            movimentacaoRepository.save(MovimentacaoEstoque.registrarAutomatica(
-                    peca, item.getQuantidade(), os.getId(), orcamento.getId()));
-        }
     }
 
     private Orcamento localizarPublico(OrdemServico os, Long id) {

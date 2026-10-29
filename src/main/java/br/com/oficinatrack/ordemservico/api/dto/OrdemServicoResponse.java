@@ -15,6 +15,8 @@ public record OrdemServicoResponse(
         List<ItemResponse> pecas,
         List<OrcamentoResponse> orcamentos,
         List<HistoricoResponse> historico,
+        String motivoCancelamento,
+        LocalDateTime canceladoEm,
         LocalDateTime criadoEm,
         LocalDateTime atualizadoEm) {
 
@@ -27,6 +29,7 @@ public record OrdemServicoResponse(
                         i.getDescricao(), i.getValorUnitario(), i.getQuantidade(), i.subtotal())).toList(),
                 os.getOrcamentos().stream().map(OrcamentoResponse::de).toList(),
                 os.getHistorico().stream().map(HistoricoResponse::de).toList(),
+                os.getMotivoCancelamento(), os.getCanceladoEm(),
                 os.getCriadoEm(), os.getAtualizadoEm());
     }
 

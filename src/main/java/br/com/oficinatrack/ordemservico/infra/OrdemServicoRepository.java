@@ -19,6 +19,10 @@ public interface OrdemServicoRepository extends JpaRepository<OrdemServico, Long
     @Query("SELECT o FROM OrdemServico o WHERE o.numeroOs = :numeroOs")
     Optional<OrdemServico> findByNumeroOsParaAtualizacao(@Param("numeroOs") String numeroOs);
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT o FROM OrdemServico o WHERE o.id = :id")
+    Optional<OrdemServico> findByIdParaAtualizacao(@Param("id") Long id);
+
     @Query("""
             SELECT o FROM OrdemServico o
             WHERE (:status IS NULL OR o.status = :status)

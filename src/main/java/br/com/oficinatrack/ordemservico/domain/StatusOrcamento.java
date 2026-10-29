@@ -5,5 +5,6 @@ public enum StatusOrcamento {
     ENVIADO,
     APROVADO,
     RECUSADO,
-    SUBSTITUIDO
+    SUBSTITUIDO,
+    CANCELADO
 }

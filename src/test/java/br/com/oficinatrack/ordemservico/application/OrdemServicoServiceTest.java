@@ -1,23 +1,15 @@
 package br.com.oficinatrack.ordemservico.application;
 
-import br.com.oficinatrack.catalogoservicos.domain.Servico;
-import br.com.oficinatrack.catalogoservicos.infra.ServicoRepository;
-import br.com.oficinatrack.cliente.domain.Cliente;
-import br.com.oficinatrack.cliente.infra.ClienteRepository;
-import br.com.oficinatrack.estoque.domain.Peca;
-import br.com.oficinatrack.estoque.infrastructure.PecaRepository;
 import br.com.oficinatrack.ordemservico.api.dto.*;
+import br.com.oficinatrack.ordemservico.application.port.*;
 import br.com.oficinatrack.ordemservico.domain.*;
 import br.com.oficinatrack.ordemservico.infra.OrdemServicoRepository;
 import br.com.oficinatrack.shared.exception.*;
-import br.com.oficinatrack.veiculo.domain.Veiculo;
-import br.com.oficinatrack.veiculo.infra.VeiculoRepository;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
-import org.springframework.test.util.ReflectionTestUtils;
 import java.math.BigDecimal;
 import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -27,41 +19,33 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class OrdemServicoServiceTest {
     @Mock OrdemServicoRepository ordemRepository;
-    @Mock ClienteRepository clienteRepository;
-    @Mock VeiculoRepository veiculoRepository;
-    @Mock ServicoRepository servicoRepository;
-    @Mock PecaRepository pecaRepository;
+    @Mock ClienteVeiculoPort clienteVeiculoPort;
+    @Mock CatalogoServicoPort catalogoServicoPort;
+    @Mock EstoquePort estoquePort;
     @InjectMocks OrdemServicoService service;
 
     @Test
     void deveExecutarOperacoesDoFluxoAdministrativo() {
-        Cliente cliente = new Cliente();
-        cliente.setId(1L);
-        Veiculo veiculo = new Veiculo();
-        veiculo.setId(2L);
-        veiculo.setCliente(cliente);
-        when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
-        when(veiculoRepository.findById(2L)).thenReturn(Optional.of(veiculo));
         when(ordemRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         assertEquals(StatusOrdemServico.RECEBIDA,
                 service.criar(new CriarOrdemServicoRequest(1L, 2L)).status());
+        verify(clienteVeiculoPort).validarVinculo(1L, 2L);
 
         OrdemServico os = OrdemServico.abrir(1L, 2L);
         when(ordemRepository.findById(10L)).thenReturn(Optional.of(os));
         service.iniciarDiagnostico(10L);
 
-        Servico catalogo = new Servico("Troca", new BigDecimal("100.00"), 60);
-        ReflectionTestUtils.setField(catalogo, "id", 3L);
-        when(servicoRepository.findById(3L)).thenReturn(Optional.of(catalogo));
+        when(catalogoServicoPort.buscarServicoAtivo(3L))
+                .thenReturn(new ItemOrcavel(3L, "Troca", new BigDecimal("100.00")));
         service.adicionarServico(10L, new AdicionarItemRequest(3L, 1));
 
-        Peca peca = Peca.cadastrar("Filtro", new BigDecimal("20.00"), 10, 2);
-        ReflectionTestUtils.setField(peca, "id", 4L);
-        when(pecaRepository.findById(4L)).thenReturn(Optional.of(peca));
+        when(estoquePort.buscarPecaDisponivel(4L, 2))
+                .thenReturn(new ItemOrcavel(4L, "Filtro", new BigDecimal("20.00")));
         service.adicionarPeca(10L, new AdicionarItemRequest(4L, 2));
 
         var calculada = service.calcularOrcamento(10L);
+        assertEquals(new BigDecimal("140.00"), calculada.orcamentos().getFirst().total());
         service.enviarOrcamento(10L, calculada.orcamentos().getFirst().id());
         Orcamento orcamento = os.getOrcamentos().getFirst();
         os.aprovarOrcamento(orcamento);
@@ -69,7 +53,7 @@ class OrdemServicoServiceTest {
         service.entregar(10L);
 
         assertEquals(StatusOrdemServico.ENTREGUE, service.detalhar(10L).status());
-        verify(ordemRepository).flush();
+        verify(ordemRepository, times(7)).flush();
     }
 
     @Test
@@ -82,17 +66,36 @@ class OrdemServicoServiceTest {
     }
 
     @Test
-    void deveValidarReferenciasDaCriacao() {
-        when(clienteRepository.findById(1L)).thenReturn(Optional.empty());
-        assertThrows(RegraDeNegocioException.class,
-                () -> service.criar(new CriarOrdemServicoRequest(1L, 2L)));
+    void naoDeveCriarOrdemQuandoVinculoClienteVeiculoForInvalido() {
+        doThrow(new RegraDeNegocioException("Veículo não pertence ao cliente informado."))
+                .when(clienteVeiculoPort).validarVinculo(1L, 2L);
 
-        Cliente cliente = new Cliente();
-        cliente.setId(1L);
-        when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
-        when(veiculoRepository.findById(2L)).thenReturn(Optional.empty());
         assertThrows(RegraDeNegocioException.class,
                 () -> service.criar(new CriarOrdemServicoRequest(1L, 2L)));
+        verify(ordemRepository, never()).save(any());
+    }
+
+    @Test
+    void naoDeveIncluirPecaIndisponivelNoEstoque() {
+        OrdemServico os = OrdemServico.abrir(1L, 2L);
+        os.iniciarDiagnostico();
+        when(ordemRepository.findById(10L)).thenReturn(Optional.of(os));
+        when(estoquePort.buscarPecaDisponivel(4L, 5))
+                .thenThrow(new ConflitoException("Peça indisponível no estoque."));
+
+        assertThrows(ConflitoException.class, () -> service.adicionarPeca(10L, new AdicionarItemRequest(4L, 5)));
+        assertTrue(os.getItensPeca().isEmpty());
+    }
+
+    @Test
+    void deveCancelarComLockDaOrdem() {
+        OrdemServico os = OrdemServico.abrir(1L, 2L);
+        when(ordemRepository.findByIdParaAtualizacao(10L)).thenReturn(Optional.of(os));
+
+        var response = service.cancelar(10L, new CancelarOrdemServicoRequest("Cliente desistiu"));
+
+        assertEquals(StatusOrdemServico.CANCELADA, response.status());
+        assertEquals("Cliente desistiu", response.motivoCancelamento());
     }
 
     @Test

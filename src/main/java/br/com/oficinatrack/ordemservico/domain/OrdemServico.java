@@ -1,6 +1,7 @@
 package br.com.oficinatrack.ordemservico.domain;
 
 import br.com.oficinatrack.shared.exception.ConflitoException;
+import br.com.oficinatrack.shared.exception.RegraDeNegocioException;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -10,6 +11,10 @@ import java.util.*;
 @Entity
 @Table(name = "ordens_servico")
 public class OrdemServico {
+    private static final Set<StatusOrdemServico> CANCELAVEIS = EnumSet.of(StatusOrdemServico.RECEBIDA,
+            StatusOrdemServico.EM_DIAGNOSTICO, StatusOrdemServico.AGUARDANDO_APROVACAO,
+            StatusOrdemServico.ORCAMENTO_RECUSADO);
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -26,6 +31,12 @@ public class OrdemServico {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private StatusOrdemServico status;
+
+    @Column(name = "motivo_cancelamento", length = 500)
+    private String motivoCancelamento;
+
+    @Column(name = "cancelado_em")
+    private LocalDateTime canceladoEm;
 
     @Column(name = "criado_em", nullable = false, updatable = false)
     private LocalDateTime criadoEm;
@@ -129,6 +140,19 @@ public class OrdemServico {
     public void finalizarExecucao() { transicionar(StatusOrdemServico.EM_EXECUCAO, StatusOrdemServico.FINALIZADA); }
     public void confirmarEntrega() { transicionar(StatusOrdemServico.FINALIZADA, StatusOrdemServico.ENTREGUE); }
 
+    // só antes da aprovação: depois dela já houve baixa de estoque, que não é estornada
+    public void cancelar(String motivo) {
+        if (status == StatusOrdemServico.CANCELADA) return;
+        if (!CANCELAVEIS.contains(status))
+            throw new ConflitoException("Operação incompatível com o status " + status + ".");
+        if (motivo == null || motivo.isBlank())
+            throw new RegraDeNegocioException("Motivo do cancelamento é obrigatório.");
+        orcamentos.forEach(Orcamento::cancelar);
+        motivoCancelamento = motivo.trim();
+        canceladoEm = LocalDateTime.now();
+        alterarStatus(StatusOrdemServico.CANCELADA);
+    }
+
     public Orcamento localizarOrcamento(Long id) {
         return orcamentos.stream().filter(o -> Objects.equals(o.getId(), id)).findFirst()
                 .orElseThrow(() -> new ConflitoException("Orçamento não pertence à ordem de serviço."));
@@ -165,6 +189,8 @@ public class OrdemServico {
     public Long getClienteId() { return clienteId; }
     public Long getVeiculoId() { return veiculoId; }
     public StatusOrdemServico getStatus() { return status; }
+    public String getMotivoCancelamento() { return motivoCancelamento; }
+    public LocalDateTime getCanceladoEm() { return canceladoEm; }
     public LocalDateTime getCriadoEm() { return criadoEm; }
     public LocalDateTime getAtualizadoEm() { return atualizadoEm; }
     public List<ItemServicoOrdem> getItensServico() { return List.copyOf(itensServico); }
