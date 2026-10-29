@@ -13,10 +13,13 @@ Todos os exemplos usam `curl`. Se preferir, o mesmo fluxo funciona pelo Swagger 
 5. **Enviar** o orçamento leva a OS para **AGUARDANDO_APROVACAO** e trava a inclusão de itens.
 6. O cliente **aprova ou recusa** pelo acesso público, sem login. Aprovar baixa o estoque das peças e leva a OS para **EM_EXECUCAO**. Recusar leva para **ORCAMENTO_RECUSADO**.
 7. A OS é **finalizada** (`FINALIZADA`) e depois **entregue** (`ENTREGUE`).
+8. Antes da aprovação, o atendente pode **cancelar** a OS (`CANCELADA`) informando um motivo. O caso mais comum é depois de uma recusa. O orçamento ainda calculado ou enviado passa a `CANCELADO`; um orçamento recusado continua `RECUSADO`. Depois da aprovação não há cancelamento, porque o estoque já foi baixado.
 
 ```
 RECEBIDA → EM_DIAGNOSTICO → AGUARDANDO_APROVACAO → EM_EXECUCAO → FINALIZADA → ENTREGUE
-                                      └──────────→ ORCAMENTO_RECUSADO
+                                      └──────────→ ORCAMENTO_RECUSADO → CANCELADA
+
+Também pode ir para CANCELADA a partir de RECEBIDA, EM_DIAGNOSTICO ou AGUARDANDO_APROVACAO.
 ```
 
 Cada mudança de status fica registrada no histórico da OS.
@@ -34,6 +37,7 @@ Cada mudança de status fica registrada no histórico da OS.
 | Emitir acesso público | `POST /ordens-servico/{id}/acessos-publicos` | GESTOR, ATENDENTE |
 | Finalizar | `POST /ordens-servico/{id}/finalizacoes` | GESTOR, MECANICO |
 | Entregar | `POST /ordens-servico/{id}/entregas` | GESTOR, ATENDENTE |
+| Cancelar | `POST /ordens-servico/{id}/cancelamentos` | GESTOR, ATENDENTE |
 | Consultar OS, listar, histórico | `GET /ordens-servico`, `/{id}`, `/{id}/historico-status` | todos |
 
 Quem não tem o perfil recebe **403**. Sem token também recebe **403**.
@@ -153,6 +157,18 @@ curl http://localhost:8080/ordens-servico/1/historico-status -H "$H_AUTH"
 Resultado esperado no histórico: `RECEBIDA → EM_DIAGNOSTICO → AGUARDANDO_APROVACAO → EM_EXECUCAO → FINALIZADA → ENTREGUE`.
 Depois da aprovação, o estoque da peça cai de 10 para 7 (`GET /pecas/1`).
 
+### Cancelando a OS (caminho da recusa)
+
+Se o cliente recusou no passo 15, o atendente encerra a OS:
+
+```bash
+# OS 1 -> CANCELADA (motivo obrigatorio). Repetir a chamada devolve o mesmo cancelamento.
+curl -X POST http://localhost:8080/ordens-servico/1/cancelamentos -H "$H_JSON" -H "$H_AUTH" \
+  -d '{"motivo":"Cliente recusou o orcamento"}'
+```
+
+Resultado esperado no histórico: `RECEBIDA → EM_DIAGNOSTICO → AGUARDANDO_APROVACAO → ORCAMENTO_RECUSADO → CANCELADA`.
+
 ## Erros que você pode conferir
 
 | Situação | Resposta |
@@ -164,9 +180,12 @@ Depois da aprovação, o estoque da peça cai de 10 para 7 (`GET /pecas/1`).
 | Token público inválido ou expirado | **401** |
 | Adicionar item fora do status `EM_DIAGNOSTICO` (por exemplo, depois de enviar o orçamento) | **409** |
 | Adicionar o mesmo serviço ou peça duas vezes | **409** |
+| Adicionar peça com quantidade maior que o saldo em estoque | **409** |
 | Calcular o orçamento sem nenhum item | **409** |
 | Enviar um orçamento que não é o mais recente | **409** |
 | Aprovar com estoque insuficiente, ou com peça inativa | **409** |
+| Cancelar uma OS em `EM_EXECUCAO`, `FINALIZADA` ou `ENTREGUE` | **409** |
+| Cancelar sem motivo | **400** |
 
 ```bash
 # Corpo vazio (400, com a lista de campos)
@@ -182,4 +201,4 @@ curl -i http://localhost:8080/ordens-servico/1
 curl -i -X POST http://localhost:8080/ordens-servico/2/orcamentos -H "$H_AUTH"
 ```
 
-> O estoque só é conferido e baixado **na aprovação** do orçamento. Ao adicionar a peça na OS, a quantidade não é validada contra o estoque.
+> O estoque é conferido **duas vezes**. Ao adicionar a peça na OS, a quantidade é validada contra o saldo atual, mas nada fica reservado. Na **aprovação** do orçamento, o saldo é conferido de novo e baixado. Se outra saída consumiu a peça nesse intervalo, a aprovação devolve 409 sem baixar nada.
