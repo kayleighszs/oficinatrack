@@ -4,7 +4,7 @@ spring:
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/oficina}
     username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
+    password: ${DB_PASSWORD:loaijnupr9384}
   jpa:
     open-in-view: false
     hibernate:
@@ -19,7 +19,7 @@ spring:
 api:
   security:
     token:
-      secret: ${JWT_SECRET}
+      secret: ${JWT_SECRET:defaultPassword}
       expiration: ${JWT_EXPIRATION:1800000}
   public-access:
     expiration-days: ${PUBLIC_ACCESS_EXPIRATION_DAYS:7}
