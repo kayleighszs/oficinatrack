@@ -67,6 +67,13 @@ public class OrdemServicoController {
     @PreAuthorize("hasAnyRole('GESTOR', 'ATENDENTE')")
     public OrdemServicoResponse entregar(@PathVariable @Positive Long id) { return service.entregar(id); }
 
+    @PostMapping("/{id}/cancelamentos")
+    @PreAuthorize("hasAnyRole('GESTOR', 'ATENDENTE')")
+    public OrdemServicoResponse cancelar(@PathVariable @Positive Long id,
+                                         @Valid @RequestBody CancelarOrdemServicoRequest request) {
+        return service.cancelar(id, request);
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('GESTOR', 'ATENDENTE', 'MECANICO')")
     public OrdemServicoResponse detalhar(@PathVariable @Positive Long id) { return service.detalhar(id); }
