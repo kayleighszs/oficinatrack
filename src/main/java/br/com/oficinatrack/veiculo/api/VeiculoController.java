@@ -1,9 +1,14 @@
 package br.com.oficinatrack.veiculo.api;
 
+import br.com.oficinatrack.shared.exception.ErroResponse;
 import br.com.oficinatrack.veiculo.api.dto.VeiculoRequest;
 import br.com.oficinatrack.veiculo.api.dto.VeiculoResponse;
 import br.com.oficinatrack.veiculo.api.dto.VeiculoUpdateRequest;
 import br.com.oficinatrack.veiculo.application.VeiculoService;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,6 +30,18 @@ public class VeiculoController {
 
     @PreAuthorize("hasAnyRole('GESTOR', 'ATENDENTE')")
     @PostMapping
+    @ResponseStatus(org.springframework.http.HttpStatus.CREATED)
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Veículo cadastrado com sucesso"),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Dados inválidos ou placa já cadastrada",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErroResponse.class)
+                    )
+            )
+    })
     public ResponseEntity<VeiculoResponse> cadastrar(@Valid @RequestBody VeiculoRequest request) {
         VeiculoResponse response = veiculoService.cadastrar(request);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()

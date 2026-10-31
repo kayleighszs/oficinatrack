@@ -92,6 +92,7 @@ public class OrdemServico {
         validarQuantidade(quantidade);
         invalidarOrcamentoCalculado();
         itensServico.add(new ItemServicoOrdem(this, id, descricao, valor, quantidade));
+        marcarAtualizada();
     }
 
     public void adicionarPeca(Long id, String descricao, BigDecimal valor, Integer quantidade) {
@@ -101,6 +102,7 @@ public class OrdemServico {
         validarQuantidade(quantidade);
         invalidarOrcamentoCalculado();
         itensPeca.add(new ItemPecaOrdem(this, id, descricao, valor, quantidade));
+        marcarAtualizada();
     }
 
     public Orcamento calcularOrcamento() {
@@ -113,6 +115,7 @@ public class OrdemServico {
                 .setScale(2, RoundingMode.HALF_UP);
         Orcamento orcamento = new Orcamento(this, orcamentos.size() + 1, total);
         orcamentos.add(orcamento);
+        marcarAtualizada();
         return orcamento;
     }
 
@@ -167,11 +170,14 @@ public class OrdemServico {
         StatusOrdemServico anterior = status;
         status = destino;
         registrarHistorico(anterior, destino);
+        marcarAtualizada();
     }
 
     private void registrarHistorico(StatusOrdemServico anterior, StatusOrdemServico novo) {
         historico.add(new HistoricoStatusOrdemServico(this, anterior, novo));
     }
+
+    private void marcarAtualizada() { atualizadoEm = LocalDateTime.now(); }
 
     private void exigirDiagnostico() { exigirStatus(StatusOrdemServico.EM_DIAGNOSTICO); }
     private void exigirStatus(StatusOrdemServico esperado) {

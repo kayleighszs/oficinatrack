@@ -4,12 +4,14 @@ import br.com.oficinatrack.ordemservico.api.dto.*;
 import br.com.oficinatrack.ordemservico.application.OrdemServicoService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.List;
 import org.springframework.data.domain.*;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -24,6 +26,7 @@ public class OrdemServicoController {
     public OrdemServicoController(OrdemServicoService service) { this.service = service; }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAnyRole('GESTOR', 'ATENDENTE')")
     public ResponseEntity<OrdemServicoResponse> criar(@Valid @RequestBody CriarOrdemServicoRequest request) {
         OrdemServicoResponse response = service.criar(request);
@@ -86,11 +89,13 @@ public class OrdemServicoController {
             @RequestParam(required = false) Long veiculoId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime inicio,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fim,
-            @PageableDefault(sort = "criadoEm", direction = Sort.Direction.DESC) Pageable pageable) {
+            @ParameterObject @PageableDefault(sort = "criadoEm", direction = Sort.Direction.DESC) Pageable pageable) {
         return service.listar(status, clienteId, veiculoId, inicio, fim, pageable);
     }
 
     @GetMapping("/{id}/historico-status")
     @PreAuthorize("hasAnyRole('GESTOR', 'ATENDENTE', 'MECANICO')")
-    public Object historico(@PathVariable @Positive Long id) { return service.detalhar(id).historico(); }
+    public List<OrdemServicoResponse.HistoricoResponse> historico(@PathVariable @Positive Long id) {
+        return service.detalhar(id).historico();
+    }
 }

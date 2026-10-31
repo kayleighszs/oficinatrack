@@ -3,6 +3,7 @@ package br.com.oficinatrack.cliente.api;
 import br.com.oficinatrack.cliente.api.dto.AtualizarClienteRequest;
 import br.com.oficinatrack.cliente.api.dto.CadastrarClienteRequest;
 import br.com.oficinatrack.cliente.api.dto.ClienteResponse;
+import br.com.oficinatrack.shared.exception.ErroResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -12,7 +13,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -59,7 +59,7 @@ public interface SwaggerCliente {
                     description = "Parâmetros de consulta inválidos",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorResponse.class)
+                            schema = @Schema(implementation = ErroResponse.class)
                     )
             ),
             @ApiResponse(
@@ -67,7 +67,7 @@ public interface SwaggerCliente {
                     description = "Nenhum cliente encontrado",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorResponse.class)
+                            schema = @Schema(implementation = ErroResponse.class)
                     )
             )
     })
@@ -92,7 +92,7 @@ public interface SwaggerCliente {
                     description = "ID inválido",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorResponse.class)
+                            schema = @Schema(implementation = ErroResponse.class)
                     )
             ),
             @ApiResponse(
@@ -100,7 +100,7 @@ public interface SwaggerCliente {
                     description = "Cliente não encontrado",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorResponse.class)
+                            schema = @Schema(implementation = ErroResponse.class)
                     )
             )
     })

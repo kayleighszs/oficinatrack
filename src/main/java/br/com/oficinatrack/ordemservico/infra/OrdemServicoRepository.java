@@ -28,8 +28,8 @@ public interface OrdemServicoRepository extends JpaRepository<OrdemServico, Long
             WHERE (:status IS NULL OR o.status = :status)
               AND (:clienteId IS NULL OR o.clienteId = :clienteId)
               AND (:veiculoId IS NULL OR o.veiculoId = :veiculoId)
-              AND (:inicio IS NULL OR o.criadoEm >= :inicio)
-              AND (:fim IS NULL OR o.criadoEm <= :fim)
+              AND o.criadoEm >= COALESCE(:inicio, o.criadoEm)
+              AND o.criadoEm <= COALESCE(:fim, o.criadoEm)
             """)
     Page<OrdemServico> buscar(@Param("status") StatusOrdemServico status,
                               @Param("clienteId") Long clienteId,

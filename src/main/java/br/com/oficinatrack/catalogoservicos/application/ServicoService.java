@@ -28,7 +28,7 @@ public class ServicoService {
 
 
     @Transactional
-    public ResponseEntity<?> cadastrar(ServicoRequestIn request) throws Exception {
+    public ResponseEntity<ServicoRequestOut> cadastrar(ServicoRequestIn request) {
 
         validarServico(request);
 
@@ -52,7 +52,7 @@ public class ServicoService {
     }
 
     @Transactional(readOnly = true)
-    public ResponseEntity listar(String nome, Pageable pageable) {
+    public ResponseEntity<Map<String, Object>> listar(String nome, Pageable pageable) {
         Page<Servico> servicos;
 
         if (nome != null && !nome.isBlank()) {
@@ -78,7 +78,7 @@ public class ServicoService {
     }
 
     @Transactional(readOnly = true)
-    public ResponseEntity buscarPorId(Long id) {
+    public ResponseEntity<ServicoRequestOut> buscarPorId(Long id) {
         Servico servico = servicoRepository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Serviço não encontrado com o ID: " + id));
 
@@ -92,7 +92,7 @@ public class ServicoService {
     }
 
     @Transactional
-    public ResponseEntity inativar(Long id) {
+    public ResponseEntity<Void> inativar(Long id) {
         Servico servico = servicoRepository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Serviço não encontrado com o ID: " + id));
 
@@ -101,7 +101,7 @@ public class ServicoService {
         return ResponseEntity.ok().build();
     }
 
-    public ResponseEntity atualizar(Long id, ServicoRequestIn req){
+    public ResponseEntity<Void> atualizar(Long id, ServicoRequestIn req){
         Servico servico = servicoRepository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Serviço não encontrado com o ID: " + id));
 

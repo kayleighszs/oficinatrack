@@ -6,6 +6,7 @@ import br.com.oficinatrack.auth.api.dto.TokenResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Autenticação", description = "Endpoints para gestão de login e emissão de tokens JWT")
 @RestController
 @RequestMapping("/auth")
+@SecurityRequirements
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
