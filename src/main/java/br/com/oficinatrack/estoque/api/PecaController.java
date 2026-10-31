@@ -6,6 +6,7 @@ import br.com.oficinatrack.estoque.application.dto.PecaRequest;
 import br.com.oficinatrack.estoque.application.dto.PecaResponse;
 import br.com.oficinatrack.estoque.application.dto.PecaUpdateRequest;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,7 @@ public class PecaController {
 
     @PreAuthorize("hasRole('GESTOR')")
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<PecaResponse> cadastrar(@Valid @RequestBody PecaRequest pecaRequest){
         PecaResponse response = pecaService.cadastrar(pecaRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -38,7 +40,7 @@ public class PecaController {
     public ResponseEntity<Page<PecaResponse>> listar(
             @RequestParam(required = false) String nome,
             @RequestParam(required = false) Boolean estoqueBaixo,
-            Pageable pageable
+            @ParameterObject Pageable pageable
             ){
         Page<PecaResponse> response = pecaService.listar(nome, estoqueBaixo, pageable);
         return ResponseEntity.ok(response);

@@ -19,6 +19,7 @@ public class AcessoPublicoController {
     public AcessoPublicoController(AcessoPublicoService service) { this.service = service; }
 
     @PostMapping
+    @org.springframework.web.bind.annotation.ResponseStatus(org.springframework.http.HttpStatus.CREATED)
     public ResponseEntity<AcessoPublicoResponse> emitir(@PathVariable @Positive Long ordemId) {
         AcessoPublicoResponse response = service.emitir(ordemId);
         return ResponseEntity.created(URI.create("/ordens-servico/" + ordemId + "/acessos-publicos/"
