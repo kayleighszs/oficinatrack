@@ -24,6 +24,36 @@ Uma oficina costuma controlar ordens de serviço, peças e orçamentos em papel 
 
 Java 21, Spring Boot 4, Spring Security com JWT, Spring Data JPA, PostgreSQL 16, Flyway, MapStruct, springdoc (OpenAPI/Swagger), Testcontainers, JaCoCo e Docker.
 
+## Arquitetura utilizada
+
+O OficinaTrack utiliza uma arquitetura backend
+organizada por módulos de domínio, separando
+as responsabilidades de cada funcionalidade.
+
+A aplicação utiliza:
+- API REST com Spring Boot;
+- Separação por módulos de negócio;
+- Camadas de Controller, Service e Repository;
+- Persistência com Spring Data JPA;
+- DTOs para comunicação entre as camadas;
+- Spring Security com autenticação JWT.
+
+## Banco de dados
+
+O projeto utiliza PostgreSQL 16 como banco de dados
+relacional.
+
+A escolha foi motivada por:
+- Suporte a transações ACID;
+- Integridade referencial;
+- Confiabilidade na persistência dos dados;
+- Suporte a relacionamentos entre entidades;
+- Compatibilidade com Spring Data JPA.
+
+O banco é inicializado automaticamente por meio
+do Docker Compose, e suas alterações estruturais
+são controladas pelo Flyway.
+
 ## Como rodar (recomendado: Docker)
 
 É o caminho mais simples. **Você só precisa do Docker.** Não precisa instalar Java, Maven nem PostgreSQL.
@@ -169,6 +199,21 @@ src/main/resources/db/migration/   migrations do Flyway
 docs/                              diagramas e mapeamento dos épicos
 ```
 
-## Documentação
+## Documentação DDD
 
-Diagramas de domínio, fluxos de negócio e o mapeamento da API estão em [docs/](docs/). O passo a passo da OS está em [docs/ordem-servico.md](docs/ordem-servico.md).
+A documentação de Domain-Driven Design (DDD)
+contém os diagramas e mapeamentos utilizados
+na modelagem do domínio do OficinaTrack.
+
+- [Documentação DDD](./docs/ddd/diagramas.pdf)
+- [Event Storming](./docs/ddd/Event%20Storming.pdf)
+- [Linguagem Ubiqua](./docs/ddd/linguagem-ubiqua.md)
+- [Fluxo de Ordem de Serviço](./docs/ordem-servico.md)
+
+## Vídeo da entrega
+
+Demonstração funcional do OficinaTrack,
+apresentando suas principais funcionalidades,
+fluxos de negócio e execução da API.
+
+**Link:** [Assistir à demonstração](https://www.youtube.com/watch?v=-uwLU_ecIfA)
